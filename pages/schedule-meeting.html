@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запланировать - Insight Room</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .schedule-form {
+            text-align: left;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .schedule-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .schedule-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .home-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">Insight Room</a>
+            </div>
+            <nav class="nav">
+                <a href="auth.html" class="login-btn">Войти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="content-card">
+                <h1 class="content-title">Запланировать встречу</h1>
+                <p class="content-subtitle">Создайте встречу заранее и пригласите участников</p>
+                
+                <form class="schedule-form">
+                    <div class="form-group">
+                        <label class="form-label">Название встречи</label>
+                        <input type="text" class="form-input" placeholder="Введите название встречи" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Дата</label>
+                            <input type="date" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Время</label>
+                            <input type="time" class="form-input" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Описание (необязательно)</label>
+                        <textarea class="form-textarea" placeholder="О чем будет встреча..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="schedule-btn">Запланировать встречу</button>
+                </form>
+                
+                <a href="../index.html" class="home-btn">На главную</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Insight Room. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelector('.schedule-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Встреча запланирована! В реальном приложении здесь было бы создание события и рассылка приглашений.');
+        });
+        
+        // Установка минимальной даты - сегодня
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelector('input[type="date"]').min = today;
+    </script>
+</body>
+</html>

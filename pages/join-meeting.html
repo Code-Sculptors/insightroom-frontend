@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Присоединиться - Insight Room</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .join-form {
+            text-align: left;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .join-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .join-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">Insight Room</a>
+            </div>
+            <nav class="nav">
+                <a href="auth.html" class="login-btn">Войти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="content-card">
+                <h1 class="content-title">Присоединиться к встрече</h1>
+                <p class="content-subtitle">Введите код встречи или перейдите по ссылке</p>
+                
+                <form class="join-form">
+                    <div class="form-group">
+                        <label class="form-label">Код встречи</label>
+                        <input type="text" class="form-input" placeholder="Введите код из приглашения" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Ваше имя</label>
+                        <input type="text" class="form-input" placeholder="Как вас представить участникам" required>
+                    </div>
+                    
+                    <button type="submit" class="join-btn">Присоединиться</button>
+                </form>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                        Или вставьте полную ссылку на встречу:
+                    </p>
+                    <input type="text" class="form-input" placeholder="https://insight-room.com/meeting/..." style="font-size: 14px;">
+                </div>
+                
+                <a href="../index.html" class="home-btn">На главную</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Insight Room. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelector('.join-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const meetingCode = this.querySelector('input[type="text"]').value;
+            const userName = this.querySelectorAll('input[type="text"]')[1].value;
+            
+            if (!meetingCode || !userName) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+            
+            // Сохраняем данные для конференции
+            localStorage.setItem('currentMeetingId', meetingCode);
+            localStorage.setItem('userName', userName);
+            
+            // Переходим на страницу конференции
+            window.location.href = `conference.html?id=${meetingCode}`;
+        });
+    </script>
+</body>
+</html>

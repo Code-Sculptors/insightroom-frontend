@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конференция - Insight Room</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/conference.css">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">Insight Room</a>
+            </div>
+            <nav class="nav">
+                <div class="meeting-info">
+                    <span id="meetingId">ID: Загрузка...</span>
+                    <span id="participantCount">👥 1</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="conference-container">
+            <div class="participants-grid" id="participantsGrid">
+                <!-- Локальный пользователь -->
+                <div class="participant-card local-user">
+                    <div class="video-container">
+                        <video id="localVideo" class="user-video" autoplay muted></video>
+                        <div class="participant-info">
+                            <span class="participant-name" id="localUserName">Загрузка...</span>
+                            <div class="participant-status">
+                                <div class="status-indicator" id="localAudioStatus"></div>
+                                <div class="status-indicator" id="localVideoStatus"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Панель управления -->
+        <div class="control-panel">
+            <button class="control-btn" id="toggleAudio" title="Микрофон">🎤</button>
+            <button class="control-btn" id="toggleVideo" title="Камера">📹</button>
+            <button class="control-btn" id="toggleScreen" title="Поделиться экраном">🖥️</button>
+            <button class="control-btn danger" id="leaveCall" title="Покинуть встречу">📞</button>
+        </div>
+    </main>
+
+    <script src="../js/conference.js"></script>
+</body>
+</html>
