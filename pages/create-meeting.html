@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создать встречу - Insight Room</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -12,10 +12,10 @@
     <header class="header">
         <div class="container">
             <div class="logo">
-                <a href="../index.html" class="logo-link">Insight Room</a>
+                <a href="/" class="logo-link">Insight Room</a>
             </div>
             <nav class="nav">
-                <a href="auth.html" class="login-btn">Войти</a>
+                <a href="/login" class="login-btn">Войти</a>
             </nav>
         </div>
     </header>
@@ -28,7 +28,7 @@
                 
                 <div class="btn primary-btn" style="margin: 0 auto 30px; cursor: pointer;">
                     <div class="btn-icon">
-                        <img src="../images/create-icon.png" alt="Создать встречу">
+                        <img src="{{ url_for('static', filename='images/create-icon.png') }}" alt="Создать встречу">
                     </div>
                     <span class="btn-text">Создать сейчас</span>
                 </div>
@@ -37,7 +37,7 @@
                     Ваша встреча будет создана мгновенно. Вы получите уникальную ссылку для приглашения участников.
                 </p>
                 
-                <a href="../index.html" class="home-btn">На главную</a>
+                <a href="/" class="home-btn">На главную</a>
             </div>
         </div>
     </main>
