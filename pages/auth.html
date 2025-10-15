@@ -283,12 +283,12 @@
                 <form id="registerForm" class="auth-form">
                     <div class="form-group">
                         <label class="form-label">Имя</label>
-                        <input type="text" class="form-input" placeholder="Ваше имя" required>
+                        <input type="username" class="form-input" placeholder="Ваше имя" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Логин</label>
-                        <input type="text" class="form-input" placeholder="Ваш логин" required>
+                        <input type="login" class="form-input" placeholder="Ваш логин" required>
                     </div>
 
                     <div class="form-group">
@@ -318,12 +318,13 @@
                         </label>
                     </div>
 
-                    <button type="submit" class="auth-btn">Создать аккаунт</button>
+                    <button type="submit" class="auth-btn" id="submitBtn">Создать аккаунт</button>
                 </form>
             </div>
         </div>
     </main>
 
+    <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>"
     <script>
         function showForm(formType) {
             // Обновляем активные табы
@@ -362,10 +363,15 @@
             alert('Вход выполнен! В реальном приложении здесь была бы авторизация.');
         });
 
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const submitBtn = document.getElementById('submitBtn');
             // Проверка паролей
+            const username = this.querySelectorAll('input[type="username"]')[0].value;
+            const login = this.querySelectorAll('input[type="login"]')[0].value;
+            const email = this.querySelectorAll('input[type="email"]')[0].value;
+            const tel = this.querySelectorAll('input[type="tel"]')[0].value;
             const password = this.querySelectorAll('input[type="password"]')[0].value;
             const confirmPassword = this.querySelectorAll('input[type="password"]')[1].value;
             
@@ -379,7 +385,37 @@
                 return;
             }
             
-            alert('Регистрация завершена! В реальном приложении здесь была бы регистрация.');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Регистрация...';
+            //Регистрация
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        login: login,
+                        email: email,
+                        tel: tel,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                        console.log('Registration SUCCESS!')
+                        window.location.replace('/')
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                } finally {
+                    // Разблокируем кнопку
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Зарегистрироваться';
+                }
         });
     </script>
 </body>
