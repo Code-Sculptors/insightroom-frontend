@@ -2,7 +2,7 @@ from flask import render_template, Flask
 import os
 
 
-app = Flask(__name__, template_folder=os.path.dirname(os.path.abspath(__file__)) + '/peages')
+app = Flask(__name__, template_folder=os.path.dirname(os.path.abspath(__file__)) + '/pages')
 # !!!!!!!!!!!!!!!!! раскомментировать строку внизу если хочешь потестить страничку в new_pages и закомментировать строку сверху !!!!!!!!!!!!!!!!!!!!!!!!!!!
 # app = Flask(__name__, template_folder=os.path.dirname(os.path.abspath(__file__)) + '/new_pages')
 print(app.template_folder)
