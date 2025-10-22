@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Insight Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/personal-cabinet.css') }}">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="/" class="logo-link">Insight Room</a>
+            </div>
+            <nav class="nav">
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name">{{ user_name }}</span>
+                        <span class="user-login">{{ user_login }}</span>
+                    </div>
+                    <form action="/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                    <!--<a href="/index.html" class="logout-btn">Выйти</a>-->
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container dashboard-container">
+            <!-- Заголовок -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Личный кабинет</h1>
+                <p class="dashboard-subtitle">Добро пожаловать, {{ user_name }}</p>
+            </div>
+
+            <div class="dashboard-layout">
+                <!-- Основной контент -->
+                <div class="dashboard-main">
+                    <!-- Запланированные конференции -->
+                    <section class="dashboard-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <img src="{{ url_for('static', filename='images/calendar-icon.png') }}" alt="Календарь" class="section-icon">
+                                <h2>Запланированные встречи</h2>
+                            </div>
+                            <span class="section-count">{{ meetings_count }}</span>
+                        </div>
+                        <div class="compact-list">
+                            {% for meeting in meetings %}
+                            <div class="list-item">
+                                <div class="item-main">
+                                    <h3>{{ meeting.title }}</h3>
+                                    <p class="item-meta">{{ meeting.time }} • ID: {{ meeting.id }}</p>
+                                </div>
+                                <div class="item-actions">
+                                    <form action="/join_meeting" method="POST" style="display: inline;">
+                                        <input type="hidden" name="meeting_id" value="{{ meeting.id }}">
+                                        <button type="submit" class="action-btn small primary">Присоединиться</button>
+                                    </form>
+                                    <form action="/copy_meeting_link" method="POST" style="display: inline;">
+                                        <input type="hidden" name="meeting_id" value="{{ meeting.id }}">
+                                        <button type="submit" class="action-btn small secondary">Ссылка</button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="section-footer">
+                            <form action="/schedule_meeting" method="POST" style="display: inline;">
+                                <button type="submit" class="text-btn">+ Запланировать новую встречу</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Мои комнаты -->
+                    <section class="dashboard-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <img src="{{ url_for('static', filename='images/room-icon.png') }}" alt="Комнаты" class="section-icon">
+                                <h2>Мои комнаты</h2>
+                            </div>
+                            <span class="section-count">{{ rooms_count }}</span>
+                        </div>
+                        <div class="compact-list">
+                            {% for room in rooms %}
+                            <div class="list-item">
+                                <div class="item-main">
+                                    <h3>{{ room.title }}</h3>
+                                    <p class="item-meta">{{ room.type }} • ID: {{ room.id }} • {{ room.participants }} участников</p>
+                                </div>
+                                <div class="item-actions">
+                                    <form action="/enter_room" method="POST" style="display: inline;">
+                                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                                        <button type="submit" class="action-btn small primary">Войти</button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="section-footer">
+                            <form action="/create_room" method="POST" style="display: inline;">
+                                <button type="submit" class="text-btn">+ Создать новую комнату</button>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Боковая панель -->
+                <div class="dashboard-sidebar">
+                    <!-- Контакты -->
+                    <section class="sidebar-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <img src="{{ url_for('static', filename='images/contacts-icon.png') }}" alt="Контакты" class="section-icon">
+                                <h3>Контакты</h3>
+                            </div>
+                            <span class="section-count">{{ contacts_count }}</span>
+                        </div>
+                        <div class="contacts-compact">
+                            {% for contact in contacts %}
+                            <div class="contact-item">
+                                <div class="contact-avatar small">{{ contact.initials }}</div>
+                                <div class="contact-info">
+                                    <span class="contact-name">{{ contact.name }}</span>
+                                    <span class="contact-email">{{ contact.email }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="section-footer">
+                            <form action="/add_contact" method="POST" style="display: inline;">
+                                <button type="submit" class="text-btn small">+ Добавить контакт</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Быстрые действия -->
+                    <section class="sidebar-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <img src="{{ url_for('static', filename='images/actions-icon.png') }}" alt="Действия" class="section-icon">
+                                <h3>Быстрые действия</h3>
+                            </div>
+                        </div>
+                        <div class="quick-actions-compact">
+                            <a href="/create_meeting" class="quick-action-btn"> 
+                                <img src="{{ url_for('static', filename='images/create-icon.png') }}" alt="Создать встречу" class="action-icon">
+                                <span>Создать встречу</span>
+                            </a>
+                            <a href="/join_meeting" class="quick-action-btn">
+                                <img src="{{ url_for('static', filename='images/join-icon.png') }}" alt="Присоединиться" class="action-icon">
+                                <span>Присоединиться</span>
+                            </a>
+                            <a href="/schedule_meeting" class="quick-action-btn">
+                                <img src="{{ url_for('static', filename='images/schedule-icon.png') }}" alt="Запланировать" class="action-icon">
+                                <span>Запланировать</span>
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Insight Room. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>

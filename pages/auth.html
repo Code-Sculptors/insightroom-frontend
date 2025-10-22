@@ -5,211 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - Insight Room</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
-    <style>
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-
-        .auth-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 520px;
-            min-width: 420px;
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .auth-title {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 30px;
-            border-radius: 50px;
-            background: #f8f9fa;
-            padding: 5px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border: none;
-            background: transparent;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: #666;
-        }
-
-        .auth-tab.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-weight: normal;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .auth-divider {
-            text-align: center;
-            margin: 25px 0;
-            position: relative;
-            color: #666;
-        }
-
-        .auth-divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e9ecef;
-        }
-
-        .auth-divider span {
-            background: white;
-            padding: 0 15px;
-            position: relative;
-        }
-
-        .auth-footer {
-            text-align: center;
-            margin-top: 25px;
-            color: #666;
-        }
-
-        .auth-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .auth-link:hover {
-            text-decoration: underline;
-        }
-
-        .back-home {
-            display: inline-flex;
-            align-items: center;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .back-home:hover {
-            transform: translateX(-5px);
-        }
-
-        /* Адаптивность для мобильных */
-        @media (max-width: 480px) {
-            .auth-card {
-                padding: 30px 20px;
-                min-width: unset;
-                margin: 0 10px;
-            }
-            
-            .auth-title {
-                font-size: 24px;
-            }
-            
-            .form-input {
-                padding: 12px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}">
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -238,32 +34,33 @@
 
                 <!-- Форма входа -->
                 <form id="loginForm" class="auth-form active">
-                    <div class="form-group">
+                    <div class="auth-method-selector">
+                        <label class="form-label">Способ входа</label>
+                        <select class="method-select" id="loginMethod">
+                            <option value="login">Логин</option>
+                            <option value="email">Email</option>
+                            <option value="phone">Телефон</option>
+                        </select>
+                    </div>
+
+                    <div class="method-input-group active" id="loginInput">
                         <label class="form-label">Логин</label>
-                        <input type="text" class="form-input" placeholder="Ваш логин">
+                        <input type="text" class="form-input" placeholder="Ваш логин" id="loginField">
                     </div>
 
-                    <div class="auth-divider">
-                        <span>или</span>
-                    </div>
-                    
-                    <div class="form-group">
+                    <div class="method-input-group" id="emailInput">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-input" placeholder="your@email.com">
+                        <input type="email" class="form-input" placeholder="your@email.com" id="emailField">
                     </div>
 
-                    <div class="auth-divider">
-                        <span>или</span>
-                    </div>
-
-                    <div class="form-group">
+                    <div class="method-input-group" id="phoneInput">
                         <label class="form-label">Телефон</label>
-                        <input type="tel" class="form-input" placeholder="+7-000-000-00-00">
+                        <input type="tel" class="form-input" placeholder="+7-000-000-00-00" id="phoneField">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Пароль</label>
-                        <input type="password" class="form-input" placeholder="Введите пароль" required>
+                        <input type="password" class="form-input" placeholder="Введите пароль" id="passwordField" required>
                     </div>
 
                     <div class="form-group">
@@ -324,7 +121,8 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>"
+    
+    <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
     <script>
         function showForm(formType) {
             // Обновляем активные табы
@@ -418,5 +216,140 @@
                 }
         });
     </script>
+
+    <!--<script>
+        function showForm(formType) {
+            // Обновляем активные табы
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Показываем активную форму
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(formType + 'Form').classList.add('active');
+        }
+
+        // функция для переключения полей входа
+        function setupAuthMethodSelector() {
+            const methodSelect = document.getElementById('loginMethod');
+            const loginInput = document.getElementById('loginInput');
+            const emailInput = document.getElementById('emailInput');
+            const phoneInput = document.getElementById('phoneInput');
+            
+            methodSelect.addEventListener('change', function() {
+                [loginInput, emailInput, phoneInput].forEach(input => {
+                    input.classList.remove('active');
+                });
+                
+                switch(this.value) {
+                    case 'login':
+                        loginInput.classList.add('active');
+                        break;
+                    case 'email':
+                        emailInput.classList.add('active');
+                        break;
+                    case 'phone':
+                        phoneInput.classList.add('active');
+                        break;
+                }
+            });
+        }
+
+        // Обработка форм
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const method = document.getElementById('loginMethod').value;
+            const password = document.getElementById('passwordField').value;
+            let identifier = '';
+            
+            switch(method) {
+                case 'login':
+                    identifier = document.getElementById('loginField').value;
+                    break;
+                case 'email':
+                    identifier = document.getElementById('emailField').value;
+                    break;
+                case 'phone':
+                    identifier = document.getElementById('phoneField').value;
+                    break;
+            }
+            
+            if (!password) {
+                alert('Пожалуйста, введите пароль');
+                return;
+            }
+            
+            if (!identifier) {
+                alert('Пожалуйста, заполните поле для входа');
+                return;
+            }
+            
+            alert('Вход выполнен! В реальном приложении здесь была бы авторизация.');
+        });
+
+        // Обработка регистрации без изменений
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            // Проверка паролей
+            const username = this.querySelector('input[type="text"]').value;
+            const login = this.querySelectorAll('input[type="text"]')[1].value;
+            const email = this.querySelector('input[type="email"]').value;
+            const tel = this.querySelector('input[type="tel"]').value;
+            const password = this.querySelectorAll('input[type="password"]')[0].value;
+            const confirmPassword = this.querySelectorAll('input[type="password"]')[1].value;
+            
+            if (password !== confirmPassword) {
+                alert('Пароли не совпадают!');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('Пароль должен содержать не менее 8 символов');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Регистрация...';
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        login: login,
+                        email: email,
+                        tel: tel,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    console.log('Registration SUCCESS!')
+                    window.location.replace('/')
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Создать аккаунт';
+            }
+        });
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            setupAuthMethodSelector();
+        });
+    </script>-->
 </body>
 </html>
