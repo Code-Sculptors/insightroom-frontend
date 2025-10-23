@@ -1,46 +1,62 @@
 class AuthService {
     constructor() {
-        this.accessToken = localStorage.getItem('access_token');
-        this.refreshToken = localStorage.getItem('refresh_token');
         this.isRefreshing = false;
         this.failedQueue = [];
         this.is_login = false;
+        // Токены теперь хранятся в куках, а не в localStorage
     }
 
-    async login(username, password) {
-        try {
-            const response = await fetch('api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
+    async login(json_data) {
+        const response = await fetch('api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(json_data),
+            credentials: 'include'  // Важно: отправляем куки
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                this.setTokens(data.access_token, data.refresh_token);
-                // Сохраняем время истечения
-                this.setTokenExpiry('access', data.access_expires_in);
-                this.setTokenExpiry('refresh', data.refresh_expires_in);
-                
-                return true;
-            } else {
-                throw new Error('Login failed');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            return false;
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Сохраняем время истечения в localStorage (это можно оставить)
+            this.setTokenExpiry('access', data.access_expires_in);
+            this.setTokenExpiry('refresh', data.refresh_expires_in);
+            
+            this.is_login = true;
+            return true;
+        } else {
+            console.log('error in login() auth.js')
+            const data = await response.json();
+            return data.error;
         }
     }
 
-    setTokens(accessToken, refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
+    async register(json_data){
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(json_data),
+            credentials: 'include'  // Важно: отправляем куки
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Сохраняем время истечения
+            this.setTokenExpiry('access', data.access_expires_in);
+            this.setTokenExpiry('refresh', data.refresh_expires_in);
+            
+            this.is_login = true;
+            return true;
+        } else {
+            return data.error;
+        }
     }
 
+    // Эти методы больше не нужны для установки токенов, но оставим для времени истечения
     setTokenExpiry(tokenType, expiresIn) {
         const expiryTime = Date.now() + (expiresIn * 1000);
         localStorage.setItem(`${tokenType}_token_expiry`, expiryTime.toString());
@@ -70,15 +86,12 @@ class AuthService {
 
             const response = await fetch('api/refresh', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.refreshToken}`
-                }
+                credentials: 'include'  // Отправляем куки с refresh token
             });
 
             if (response.ok) {
                 const data = await response.json();
-                this.accessToken = data.access_token;
-                localStorage.setItem('access_token', data.access_token);
+                // Сервер автоматически обновит access token в куках
                 this.setTokenExpiry('access', data.access_expires_in);
 
                 // Обрабатываем очередь запросов
@@ -113,7 +126,7 @@ class AuthService {
     handleRefreshTokenExpired() {
         console.log('Refresh token истек. Требуется полная переаутентификация.');
         
-        // Очищаем токены
+        // Очищаем данные
         this.logout();
         
         // Показываем пользователю сообщение
@@ -148,6 +161,9 @@ class AuthService {
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
+        // Убедимся, что отправляем куки
+        options.credentials = 'include';
+
         // Проверяем, не истек ли access token
         if (this.isTokenExpired('access') && !this.isTokenExpired('refresh')) {
             try {
@@ -161,15 +177,8 @@ class AuthService {
             }
         }
 
-        if (!this.accessToken) {
-            throw new Error('No access token');
-        }
-
-        options.headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${this.accessToken}`
-        };
         let response = await fetch(url, options);
+        
         // Если access token истек на сервере (маловероятно, но возможно)
         if (response.status === 401) {
             const errorData = await response.json();
@@ -177,7 +186,6 @@ class AuthService {
             if (errorData.error === 'access_token_expired') {
                 if (!this.isTokenExpired('refresh')) {
                     await this.refreshAccessToken();
-                    options.headers['Authorization'] = `Bearer ${this.accessToken}`;
                     response = await fetch(url, options);
                 } else {
                     this.handleRefreshTokenExpired();
@@ -191,28 +199,20 @@ class AuthService {
 
     logout() {
         // Отправляем запрос на сервер для добавления в черный список
-
-        if (this.accessToken) {
-            fetch('api/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.accessToken}`,
-                },
-                body: JSON.stringify({'refresh_token': this.refreshToken})
-            }).catch(console.error);
-        }
-        // Очищаем локальное хранилище
-        this.accessToken = null;
-        this.refreshToken = null;
+        fetch('api/logout', {
+            method: 'POST',
+            credentials: 'include'  // Отправляем куки с токенами
+        }).catch(console.error);
+        
+        // Очищаем локальное хранилище (только expiry данные)
         this.is_login = false;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
         localStorage.removeItem('access_token_expiry');
         localStorage.removeItem('refresh_token_expiry');
     }
 
     isAuthenticated() {
+        // Теперь проверяем только по expiry времени
+        // В идеале нужно делать запрос к серверу для проверки валидности кук
         return !this.isTokenExpired('access') || !this.isTokenExpired('refresh');
     }
 
@@ -242,23 +242,18 @@ async function handleLogin(event) {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
-    const success = await authService.login(username, password);
-    if (success) {
-        this.is_login = success;
+    const success = await authService.login({username, password});
+    if (success === true) {
+        authService.is_login = true;
         window.location.href = '/dashboard';
     } else {
         alert('Ошибка входа. Проверьте логин и пароль.');
     }
 }
 
-function handleLogout() {
-    authService.logout();
-    window.location.href = '/';
-}
-
-async function fetchProtectedData() {
+async function fetchProtectedData(url='/api/protected-data') {
     try {
-        const response = await authService.makeAuthenticatedRequest('/api/protected-data');
+        const response = await authService.makeAuthenticatedRequest(url);
         if (response && response.ok) {
             const data = await response.json();
             return data;

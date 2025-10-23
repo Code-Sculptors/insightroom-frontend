@@ -65,11 +65,11 @@
 
                     <div class="form-group">
                         <label class="checkbox-label">
-                            <input type="checkbox"> Запомнить меня
+                            <input type="checkbox" id="rememberMe"> Запомнить меня
                         </label>
                     </div>
 
-                    <button type="submit" class="auth-btn">Войти</button>
+                    <button type="submit" class="auth-btn" id="loginBtn">Войти</button>
 
                     <div class="auth-footer">
                         <a href="#" class="auth-link">Забыли пароль?</a>
@@ -80,37 +80,37 @@
                 <form id="registerForm" class="auth-form">
                     <div class="form-group">
                         <label class="form-label">Имя</label>
-                        <input type="username" class="form-input" placeholder="Ваше имя" required>
+                        <input id="username" type="text" class="form-input" placeholder="Ваше имя" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Логин</label>
-                        <input type="login" class="form-input" placeholder="Ваш логин" required>
+                        <input id="login" type="text" class="form-input" placeholder="Ваш логин" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-input" placeholder="your@email.com" required>
+                        <input id="email" type="email" class="form-input" placeholder="your@email.com" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Телефон</label>
-                        <input type="tel" class="form-input" placeholder="+7-000-000-00-00">
+                        <input id="tel" type="tel" class="form-input" placeholder="+7-000-000-00-00">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Пароль</label>
-                        <input type="password" class="form-input" placeholder="Не менее 8 символов" required>
+                        <input id="password" type="password" class="form-input" placeholder="Не менее 8 символов" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Подтвердите пароль</label>
-                        <input type="password" class="form-input" placeholder="Повторите пароль" required>
+                        <input id="confirmPassword" type="password" class="form-input" placeholder="Повторите пароль" required>
                     </div>
 
                     <div class="form-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" required> 
+                            <input type="checkbox" id="agreeTerms" required> 
                             Я согласен с <a href="#" class="auth-link">условиями использования</a>
                         </label>
                     </div>
@@ -121,103 +121,8 @@
         </div>
     </main>
 
-    
     <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
     <script>
-        function showForm(formType) {
-            // Обновляем активные табы
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            // Показываем активную форму
-            document.querySelectorAll('.auth-form').forEach(form => {
-                form.classList.remove('active');
-            });
-            document.getElementById(formType + 'Form').classList.add('active');
-        }
-
-        // Обработка форм
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Проверка, что заполнено хотя бы одно поле из трех
-            const login = this.querySelector('input[type="text"]').value;
-            const email = this.querySelector('input[type="email"]').value;
-            const phone = this.querySelector('input[type="tel"]').value;
-            const password = this.querySelector('input[type="password"]').value;
-            
-            if (!password) {
-                alert('Пожалуйста, введите пароль');
-                return;
-            }
-            
-            if (!login && !email && !phone) {
-                alert('Пожалуйста, заполните одно из полей: логин, email или телефон');
-                return;
-            }
-            
-            alert('Вход выполнен! В реальном приложении здесь была бы авторизация.');
-        });
-
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            // Проверка паролей
-            const username = this.querySelectorAll('input[type="username"]')[0].value;
-            const login = this.querySelectorAll('input[type="login"]')[0].value;
-            const email = this.querySelectorAll('input[type="email"]')[0].value;
-            const tel = this.querySelectorAll('input[type="tel"]')[0].value;
-            const password = this.querySelectorAll('input[type="password"]')[0].value;
-            const confirmPassword = this.querySelectorAll('input[type="password"]')[1].value;
-            
-            if (password !== confirmPassword) {
-                alert('Пароли не совпадают!');
-                return;
-            }
-            
-            if (password.length < 8) {
-                alert('Пароль должен содержать не менее 8 символов');
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Регистрация...';
-            //Регистрация
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        login: login,
-                        email: email,
-                        tel: tel,
-                        password: password
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                        console.log('Registration SUCCESS!')
-                        window.location.replace('/')
-                    }
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                } finally {
-                    // Разблокируем кнопку
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Зарегистрироваться';
-                }
-        });
-    </script>
-
-    <!--<script>
         function showForm(formType) {
             // Обновляем активные табы
             document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -258,52 +163,90 @@
             });
         }
 
-        // Обработка форм
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // Обработка формы входа
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const loginBtn = document.getElementById('loginBtn');
             const method = document.getElementById('loginMethod').value;
             const password = document.getElementById('passwordField').value;
-            let identifier = '';
+            let identifier = false;
+            let login_info = {};
+            
+            // Блокируем кнопку
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Вход...';
             
             switch(method) {
                 case 'login':
-                    identifier = document.getElementById('loginField').value;
+                    login_info.login = document.getElementById('loginField').value;
+                    identifier = login_info.login;
                     break;
                 case 'email':
-                    identifier = document.getElementById('emailField').value;
+                    login_info.email = document.getElementById('emailField').value;
+                    identifier = login_info.email;
                     break;
                 case 'phone':
-                    identifier = document.getElementById('phoneField').value;
+                    login_info.phone = document.getElementById('phoneField').value;
+                    identifier = login_info.phone;
                     break;
             }
             
             if (!password) {
                 alert('Пожалуйста, введите пароль');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Войти';
                 return;
+            } else {
+                login_info.password = password;
             }
             
             if (!identifier) {
                 alert('Пожалуйста, заполните поле для входа');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Войти';
                 return;
             }
-            
-            alert('Вход выполнен! В реальном приложении здесь была бы авторизация.');
+
+            // Добавляем remember_me если нужно
+            const rememberMe = document.getElementById('rememberMe').checked;
+            if (rememberMe) {
+                login_info.remember_me = true;
+            }
+
+            try {
+                // Авторизация
+                const ans = await authService.login(login_info);
+                if (ans !== true){
+                    console.log(ans)
+                    alert(ans);
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Войти';
+                } else {
+                    // Успешный вход - перенаправляем
+                    window.location.href = '/cabinet';
+                }
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                alert('Произошла ошибка при входе');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Войти';
+            }
         });
 
-        // Обработка регистрации без изменений
+        // Обработка регистрации
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
-            // Проверка паролей
-            const username = this.querySelector('input[type="text"]').value;
-            const login = this.querySelectorAll('input[type="text"]')[1].value;
-            const email = this.querySelector('input[type="email"]').value;
-            const tel = this.querySelector('input[type="tel"]').value;
-            const password = this.querySelectorAll('input[type="password"]')[0].value;
-            const confirmPassword = this.querySelectorAll('input[type="password"]')[1].value;
+            const username = document.getElementById('username').value;
+            const login = document.getElementById('login').value;
+            const email = document.getElementById('email').value;
+            const tel = document.getElementById('tel').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             
+            // Валидация
             if (password !== confirmPassword) {
                 alert('Пароли не совпадают!');
                 return;
@@ -314,42 +257,86 @@
                 return;
             }
             
+            if (!document.getElementById('agreeTerms').checked) {
+                alert('Необходимо согласие с условиями использования');
+                return;
+            }
+            
             submitBtn.disabled = true;
             submitBtn.textContent = 'Регистрация...';
             
+            const new_user = {
+                username: username,
+                login: login,
+                email: email,
+                tel: tel,
+                password: password
+            };
+
             try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        login: login,
-                        email: email,
-                        tel: tel,
-                        password: password
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    console.log('Registration SUCCESS!')
-                    window.location.replace('/')
+                const ans = await authService.register(new_user);
+                if (ans !== true){
+                    alert(ans);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Создать аккаунт';
+                } else {
+                    window.location.href = '/cabinet';
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
-            } finally {
+                console.error('Ошибка регистрации:', error);
+                alert('Произошла ошибка при регистрации');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Создать аккаунт';
             }
         });
 
-        // Инициализация при загрузке
+        // Проверка аутентификации при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             setupAuthMethodSelector();
+            
+            // Если пользователь уже авторизован, перенаправляем на главную
+            if (authService.isAuthenticated()) {
+                window.location.href = '/cabinet';
+            }
         });
-    </script>-->
+
+        // Функция для показа/скрытия уведомлений
+        function showNotification(message, type = 'error') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 5px;
+                color: white;
+                z-index: 10000;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+                max-width: 400px;
+            `;
+            
+            if (type === 'error') {
+                notification.style.background = '#ff4757';
+            } else {
+                notification.style.background = '#2ed573';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Автоматическое скрытие через 5 секунд
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100px)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
