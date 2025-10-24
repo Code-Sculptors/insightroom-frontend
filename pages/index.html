@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insight Room - Видеовстречи</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -27,38 +28,315 @@
                 <p class="subtitle">Простой способ общаться с коллегами, друзьями и близкими</p>
                 
                 <div class="buttons-container">
-                    <a href="/create_meeting" class="btn primary-btn">
+                    <button onclick="openCreateMeetingModal()" class="btn primary-btn">
                         <div class="btn-icon">
                             <img src="{{ url_for('static', filename='images/create-icon.png') }}" alt="Создать встречу">
                         </div>
                         <span class="btn-text">Создать встречу</span>
-                    </a>
+                    </button>
                     
                     <div class="secondary-buttons">
-                        <a href="/join_meeting" class="btn secondary-btn">
+                        <button onclick="openJoinMeetingModal()" class="btn secondary-btn">
                             <div class="btn-icon">
                                 <img src="{{ url_for('static', filename='images/join-icon.png') }}" alt="Присоединиться">
                             </div>
                             <span class="btn-text">Присоединиться</span>
-                        </a>
+                        </button>
                         
-                        <a href="/schedule_meeting" class="btn secondary-btn">
+                        <button onclick="openScheduleMeetingModal()" class="btn secondary-btn">
                             <div class="btn-icon">
                                 <img src="{{ url_for('static', filename='images/schedule-icon.png') }}" alt="Запланировать">
                             </div>
                             <span class="btn-text">Запланировать</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Модальное окно создания встречи -->
+    <div id="createMeetingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Создать встречу</h2>
+                <button class="close-btn" onclick="closeCreateMeetingModal()">×</button>
+            </div>
+            <p class="content-subtitle">Мгновенно создайте новую видеовстречу</p>
+            
+            <button onclick="createMeeting()" class="modal-primary-btn">
+                <div class="btn-icon">
+                    <img src="{{ url_for('static', filename='images/create-icon.png') }}" alt="Создать встречу">
+                </div>
+                <span class="btn-text">Создать сейчас</span>
+            </button>
+            
+            <div id="meetingLink" class="meeting-link">
+                <p style="margin: 0 0 8px; font-weight: bold;">Ссылка на встречу:</p>
+                <input type="text" id="meetingUrl" readonly 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                       onclick="this.select()">
+                <button onclick="copyToClipboard()" class="modal-gradient-btn" style="margin-top: 8px;">
+                    Скопировать ссылку
+                </button>
+            </div>
+            
+            <p style="color: #666; margin-bottom: 15px;">
+                Ваша встреча будет создана мгновенно. Вы получите уникальную ссылку для приглашения участников.
+            </p>
+            
+            <button onclick="closeCreateMeetingModal()" class="modal-home-btn">На главную</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно присоединения к встрече -->
+    <div id="joinMeetingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Присоединиться к встрече</h2>
+                <button class="close-btn" onclick="closeJoinMeetingModal()">×</button>
+            </div>
+            <p class="content-subtitle">Введите код встречи или перейдите по ссылке</p>
+            
+            <div id="joinError" class="error-message" style="display: none;"></div>
+            
+            <form id="joinForm" onsubmit="handleJoinByCode(event)" class="join-form">
+                <div class="form-group">
+                    <label class="form-label">Код встречи</label>
+                    <input type="text" name="meeting_code" class="form-input" placeholder="Введите код из приглашения" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Ваше имя (необязательно)</label>
+                    <input type="text" name="user_name" class="form-input" placeholder="Как вас представить участникам">
+                    <small style="color: #666; font-size: 12px;">Если не указать, будет использовано "Участник"</small>
+                </div>
+                
+                <button type="submit" class="modal-gradient-btn">Присоединиться</button>
+            </form>
+            
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e9ecef;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 12px;">
+                    Или вставьте полную ссылку на встречу:
+                </p>
+                <form onsubmit="handleJoinByLink(event)">
+                    <input type="text" name="meeting_link" class="form-input" placeholder="Вставьте ссылку на встречу" style="font-size: 14px;">
+                    <button type="submit" class="modal-gradient-btn" style="margin-top: 8px;">Присоединиться по ссылке</button>
+                </form>
+            </div>
+            
+            <button onclick="closeJoinMeetingModal()" class="modal-home-btn">На главную</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно планирования встречи -->
+    <div id="scheduleMeetingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Запланировать встречу</h2>
+                <button class="close-btn" onclick="closeScheduleMeetingModal()">×</button>
+            </div>
+            <p class="content-subtitle">Создайте встречу заранее и пригласите участников</p>
+            
+            <form id="scheduleForm" onsubmit="handleScheduleMeeting(event)" class="schedule-form">
+                <div class="form-group">
+                    <label class="form-label">Название встречи</label>
+                    <input type="text" name="meeting_title" class="form-input" placeholder="Введите название встречи" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Дата</label>
+                        <input type="date" name="meeting_date" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Время</label>
+                        <input type="time" name="meeting_time" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Описание (необязательно)</label>
+                    <textarea name="meeting_description" class="form-textarea" placeholder="О чем будет встреча..."></textarea>
+                </div>
+                
+                <button type="submit" class="modal-gradient-btn">Запланировать встречу</button>
+            </form>
+            
+            <button onclick="closeScheduleMeetingModal()" class="modal-home-btn">На главную</button>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 Insight Room. Все права защищены.</p>
         </div>
     </footer>
+
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script>
+        // Функции для работы с модальными окнами
+        function openCreateMeetingModal() {
+            document.getElementById('createMeetingModal').classList.add('show');
+        }
+
+        function closeCreateMeetingModal() {
+            document.getElementById('createMeetingModal').classList.remove('show');
+            document.getElementById('meetingLink').classList.remove('show');
+        }
+
+        function openJoinMeetingModal() {
+            document.getElementById('joinMeetingModal').classList.add('show');
+            // Восстановление имени пользователя из localStorage
+            const savedName = localStorage.getItem('userName');
+            if (savedName) {
+                document.querySelector('#joinMeetingModal input[name="user_name"]').value = savedName;
+            }
+        }
+
+        function closeJoinMeetingModal() {
+            document.getElementById('joinMeetingModal').classList.remove('show');
+            document.getElementById('joinError').style.display = 'none';
+        }
+
+        function openScheduleMeetingModal() {
+            document.getElementById('scheduleMeetingModal').classList.add('show');
+            // Установка минимальной даты - сегодня
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('#scheduleMeetingModal input[type="date"]').min = today;
+        }
+
+        function closeScheduleMeetingModal() {
+            document.getElementById('scheduleMeetingModal').classList.remove('show');
+        }
+
+        // Закрытие модальных окон при клике вне их
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        // Функция создания встречи
+        function createMeeting() {
+            console.log('=== СОЗДАНИЕ ВСТРЕЧИ ===');
+            console.log('Действие: создание новой встречи');
+            console.log('Временная метка:', new Date().toISOString());
+            
+            // Имитация создания встречи
+            const meetingId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const meetingUrl = `${window.location.origin}/meeting/${meetingId}`;
+            
+            document.getElementById('meetingUrl').value = meetingUrl;
+            document.getElementById('meetingLink').classList.add('show');
+            
+            console.log('Создана встреча с ID:', meetingId);
+            console.log('Ссылка на встречу:', meetingUrl);
+            console.log('========================');
+        }
+
+        // Функция копирования ссылки
+        function copyToClipboard() {
+            const meetingUrl = document.getElementById('meetingUrl').value;
+            navigator.clipboard.writeText(meetingUrl).then(function() {
+                alert('Ссылка скопирована в буфер обмена!');
+                console.log('=== СОЗДАНИЕ ВСТРЕЧИ ===');
+                console.log('Ссылка скопирована:', meetingUrl);
+                console.log('Временная метка:', new Date().toISOString());
+                console.log('========================');
+            }, function(err) {
+                console.error('Ошибка копирования: ', err);
+            });
+        }
+
+        // Функция для логирования данных формы
+        function logFormData(formData, formType) {
+            console.log('=== ДАННЫЕ ФОРМЫ ПРИСОЕДИНЕНИЯ ===');
+            console.log('Тип формы:', formType);
+            console.log('Введенные параметры:');
+            
+            const meetingCode = formData.get('meeting_code') || formData.get('meeting_link');
+            const userName = formData.get('user_name');
+            
+            console.log(`  meeting_code/link: ${meetingCode}`);
+            console.log(`  user_name: ${userName ? userName : 'не указано'}`);
+            
+            console.log('Временная метка:', new Date().toISOString());
+            console.log('================================');
+        }
+
+        // Обработка присоединения по коду
+        function handleJoinByCode(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            // Логируем данные перед отправкой
+            logFormData(formData, 'Присоединение по коду');
+            
+            // Сохраняем имя пользователя если указано
+            const userName = formData.get('user_name');
+            if (userName) {
+                localStorage.setItem('userName', userName);
+            }
+            
+            // Здесь должна быть логика присоединения к встречи
+            const meetingCode = formData.get('meeting_code');
+            alert(`Присоединение к встрече ${meetingCode}...`);
+            closeJoinMeetingModal();
+        }
+
+        // Обработка присоединения по ссылке
+        function handleJoinByLink(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            // Добавляем имя из основной формы если есть
+            const mainFormName = document.querySelector('#joinMeetingModal input[name="user_name"]').value;
+            if (mainFormName) {
+                formData.append('user_name', mainFormName);
+            }
+            
+            // Логируем данные перед отправкой
+            logFormData(formData, 'Присоединение по ссылке');
+            
+            // Сохраняем имя пользователя если указано
+            if (mainFormName) {
+                localStorage.setItem('userName', mainFormName);
+            }
+            
+            // Здесь должна быть логика парсинга ссылки и присоединения
+            const meetingLink = formData.get('meeting_link');
+            alert(`Присоединение по ссылке: ${meetingLink}...`);
+            closeJoinMeetingModal();
+        }
+
+        // Обработка планирования встречи
+        function handleScheduleMeeting(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const meetingData = {
+                title: formData.get('meeting_title'),
+                date: formData.get('meeting_date'),
+                time: formData.get('meeting_time'),
+                description: formData.get('meeting_description')
+            };
+            
+            console.log('=== ПЛАНИРОВАНИЕ ВСТРЕЧИ ===');
+            console.log('Введенные параметры:');
+            console.log('  название:', meetingData.title);
+            console.log('  дата:', meetingData.date);
+            console.log('  время:', meetingData.time);
+            console.log('  описание:', meetingData.description || 'не указано');
+            console.log('Временная метка:', new Date().toISOString());
+            console.log('============================');
+            
+            alert('Встреча запланирована! В реальном приложении здесь было бы создание события и рассылка приглашений.');
+            closeScheduleMeetingModal();
+        }
+    </script>
 </body>
 </html>

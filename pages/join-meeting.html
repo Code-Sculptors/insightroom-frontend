@@ -26,15 +26,22 @@
                 <h1 class="content-title">Присоединиться к встрече</h1>
                 <p class="content-subtitle">Введите код встречи или перейдите по ссылке</p>
                 
-                <form class="join-form">
+                {% if error_message %}
+                <div class="error-message" style="color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+                
+                <form class="join-form" action="/join" method="POST">
                     <div class="form-group">
                         <label class="form-label">Код встречи</label>
-                        <input type="text" class="form-input" placeholder="Введите код из приглашения" required>
+                        <input type="text" name="meeting_code" class="form-input" placeholder="Введите код из приглашения" required>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Ваше имя</label>
-                        <input type="text" class="form-input" placeholder="Как вас представить участникам" required>
+                        <label class="form-label">Ваше имя (необязательно)</label>
+                        <input type="text" name="user_name" class="form-input" placeholder="Как вас представить участникам">
+                        <small style="color: #666; font-size: 12px;">Если не указать, будет использовано "Участник"</small>
                     </div>
                     
                     <button type="submit" class="join-btn">Присоединиться</button>
@@ -44,7 +51,10 @@
                     <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
                         Или вставьте полную ссылку на встречу:
                     </p>
-                    <input type="text" class="form-input" placeholder="https://insight-room.com/meeting/..." style="font-size: 14px;">
+                    <form action="/join-by-link" method="POST">
+                        <input type="text" name="meeting_link" class="form-input" placeholder="Вставьте ссылку на встречу" style="font-size: 14px;">
+                        <button type="submit" class="join-btn" style="margin-top: 10px; width: 100%;">Присоединиться по ссылке</button>
+                    </form>
                 </div>
                 
                 <a href="/" class="home-btn">На главную</a>
@@ -59,23 +69,62 @@
     </footer>
 
     <script>
+        // Восстановление имени пользователя из localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedName = localStorage.getItem('userName');
+            if (savedName) {
+                document.querySelector('input[name="user_name"]').value = savedName;
+            }
+        });
+        
+        // Функция для логирования данных формы
+        function logFormData(formData, formType) {
+            console.log('=== ДАННЫЕ ФОРМЫ ПРИСОЕДИНЕНИЯ ===');
+            console.log('Тип формы:', formType);
+            console.log('Введенные параметры:');
+            
+            const meetingCode = formData.get('meeting_code') || formData.get('meeting_link');
+            const userName = formData.get('user_name');
+            
+            console.log(`  meeting_code/link: ${meetingCode}`);
+            console.log(`  user_name: ${userName ? userName : 'не указано'}`);
+            //console.log(`  будет использовано: ${userName ? userName : 'Участник'}`);
+            
+            console.log('Временная метка:', new Date().toISOString());
+            console.log('================================');
+        }
+        
+        // Обработчик для формы присоединения по коду
         document.querySelector('.join-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+            const formData = new FormData(this);
             
-            const meetingCode = this.querySelector('input[type="text"]').value;
-            const userName = this.querySelectorAll('input[type="text"]')[1].value;
+            // Логируем данные перед отправкой
+            logFormData(formData, 'Присоединение по коду');
             
-            if (!meetingCode || !userName) {
-                alert('Пожалуйста, заполните все поля');
-                return;
+            // Сохраняем имя пользователя если указано
+            const userName = this.querySelector('input[name="user_name"]').value;
+            if (userName) {
+                localStorage.setItem('userName', userName);
+            }
+        });
+        
+        // Обработчик для формы присоединения по ссылке
+        document.querySelector('form[action="/join-by-link"]').addEventListener('submit', function(e) {
+            const formData = new FormData(this);
+            
+            // Добавляем имя из основной формы если есть
+            const mainFormName = document.querySelector('input[name="user_name"]').value;
+            if (mainFormName) {
+                formData.append('user_name', mainFormName);
             }
             
-            // Сохраняем данные для конференции
-            localStorage.setItem('currentMeetingId', meetingCode);
-            localStorage.setItem('userName', userName);
+            // Логируем данные перед отправкой
+            logFormData(formData, 'Присоединение по ссылке');
             
-            // Переходим на страницу конференции
-            window.location.href = `conference.html?id=${meetingCode}`;
+            // Сохраняем имя пользователя если указано
+            if (mainFormName) {
+                localStorage.setItem('userName', mainFormName);
+            }
         });
     </script>
 </body>

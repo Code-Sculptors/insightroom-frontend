@@ -485,3 +485,506 @@
         margin-right: 6px;
     }
 }
+
+/* Стили для кнопки настроек */
+.settings-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.settings-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+/* Выпадающее меню настроек */
+.settings-dropdown {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    padding: 20px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+}
+
+.settings-dropdown.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-section {
+    margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section h4 {
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Переключатель темы */
+.theme-switcher {
+    display: flex;
+    gap: 5px;
+    background: #f8f9fa;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.theme-option {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-option.active {
+    background: white;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Настройки конфиденциальности */
+.privacy-setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.privacy-setting:last-child {
+    margin-bottom: 0;
+}
+
+.privacy-setting label {
+    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.privacy-select {
+    padding: 6px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 12px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+}
+
+.privacy-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Темная тема */
+body.dark-theme .animated-bg {
+    background: linear-gradient(-45deg, #2c3e50, #34495e, #4a6572, #556f7a);
+}
+
+body.auto-theme {
+    /* Автоматическая тема будет определяться через JavaScript */
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .settings-dropdown {
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+    
+    .user-info {
+        display: none;
+    }
+}
+
+/* Стили для модальных окон */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #7f8c8d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: #f8f9fa;
+    color: #e74c3c;
+}
+
+/* ФОРМЫ */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.modal-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 0;
+}
+
+.modal-form .form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+}
+
+.modal-form .form-input,
+.modal-form .form-textarea,
+.modal-form .form-select {
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.modal-form .form-input:focus,
+.modal-form .form-textarea:focus,
+.modal-form .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-form .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal-form .form-select {
+    background: white;
+    cursor: pointer;
+}
+
+/* КНОПКИ - ЕДИНЫЙ СТИЛЬ */
+.modal-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.modal-btn:active {
+    transform: translateY(0);
+}
+
+/* ЧЕКБОКСЫ */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+.checkbox-group label {
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Анимация появления модального окна */
+.modal-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content.show {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Стили для модели А */
+.session-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.session-badge.live {
+    background: #e74c3c;
+    animation: pulse 2s infinite;
+}
+
+.session-badge.upcoming {
+    background: #3498db;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.session-type {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 3px;
+}
+
+.session-group {
+    margin-bottom: 20px;
+}
+
+.session-group:last-child {
+    margin-bottom: 0;
+}
+
+.session-group-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ПУСТЫЕ СОСТОЯНИЯ */
+.empty-state {
+    text-align: center;
+    padding: 15px 10px;
+    color: #666;
+    font-style: italic;
+    font-size: 0.9rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 5px 0;
+}
+
+.quick-action-form {
+    width: 100%;
+}
+
+/* Адаптивность для модальных окон */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 20px;
+        margin: 15px;
+        max-width: 400px;
+    }
+    
+    .modal-form {
+        gap: 14px;
+    }
+    
+    .form-row {
+        gap: 10px;
+    }
+}
+
+/* Исправление z-index для меню настроек */
+.settings-dropdown {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    padding: 20px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1100; /* Увеличиваем z-index чтобы было поверх модальных окон */
+}
+
+.settings-dropdown.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+/* Увеличиваем z-index для кнопки настроек */
+.settings-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+    position: relative;
+    z-index: 1101; /* Кнопка должна быть выше выпадающего меню */
+}
+
+/* Убедимся, что модальные окна имеют меньший z-index */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Меньше чем у настроек */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Для header тоже увеличим z-index чтобы меню настроек не обрезалось */
+.header {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 1050; /* Header выше модальных окон но ниже настроек */
+}
+
+/* Адаптивность для меню настроек */
+@media (max-width: 768px) {
+    .settings-dropdown {
+        right: 10px;
+        left: 10px;
+        width: auto;
+        top: 65px; /* Немного ближе к кнопке на мобильных */
+    }
+}

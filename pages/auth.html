@@ -123,6 +123,7 @@
 
     <script src="{{ url_for('static', filename='JS/auth.js') }}"></script>
     <script>
+        // Функция для переключения между формами входа и регистрации
         function showForm(formType) {
             // Обновляем активные табы
             document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -135,6 +136,48 @@
                 form.classList.remove('active');
             });
             document.getElementById(formType + 'Form').classList.add('active');
+        }
+
+        // Функция для логирования данных формы
+        function logAuthData(formData, formType) {
+            console.log('=== ДАННЫЕ ФОРМЫ АУТЕНТИФИКАЦИИ ===');
+            console.log('Тип формы:', formType);
+            console.log('Введенные параметры:');
+            
+            // Для входа
+            if (formType === 'login') {
+                const method = document.getElementById('loginMethod').value;
+                console.log(`  метод входа: ${method}`);
+                
+                switch(method) {
+                    case 'login':
+                        console.log(`  логин: ${formData.login || 'не указано'}`);
+                        break;
+                    case 'email':
+                        console.log(`  email: ${formData.email || 'не указано'}`);
+                        break;
+                    case 'phone':
+                        console.log(`  телефон: ${formData.phone || 'не указано'}`);
+                        break;
+                }
+                
+                console.log(`  пароль: ${formData.password || 'не указан'}`);
+                console.log(`  запомнить меня: ${formData.remember_me ? 'да' : 'нет'}`);
+            }
+            
+            // Для регистрации
+            if (formType === 'register') {
+                console.log(`  имя: ${formData.username || 'не указано'}`);
+                console.log(`  логин: ${formData.login || 'не указано'}`);
+                console.log(`  email: ${formData.email || 'не указано'}`);
+                console.log(`  телефон: ${formData.tel || 'не указано'}`);
+                console.log(`  пароль: ${formData.password || 'не указан'}`);
+                console.log(`  подтверждение пароля: ${formData.confirmPassword || 'не указано'}`);
+                //console.log(`  согласие с условиями: ${document.getElementById('agreeTerms').checked ? 'да' : 'нет'}`);
+            }
+            
+            console.log('Временная метка:', new Date().toISOString());
+            console.log('================================');
         }
 
         // функция для переключения полей входа
@@ -214,6 +257,9 @@
                 login_info.remember_me = true;
             }
 
+            // Логируем данные перед отправкой
+            logAuthData(login_info, 'login');
+
             try {
                 // Авторизация
                 const ans = await authService.login(login_info);
@@ -272,6 +318,9 @@
                 tel: tel,
                 password: password
             };
+
+            // Логируем данные перед отправкой
+            logAuthData({...new_user, confirmPassword: confirmPassword}, 'register');
 
             try {
                 const ans = await authService.register(new_user);
