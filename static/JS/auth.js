@@ -1,59 +1,52 @@
 class AuthService {
     constructor() {
-        this.accessToken = localStorage.getItem('access_token');
-        this.refreshToken = localStorage.getItem('refresh_token');
         this.isRefreshing = false;
         this.failedQueue = [];
         this.is_login = false;
+        // Полностью убираем localStorage
     }
 
-    async login(username, password) {
-        try {
-            const response = await fetch('api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
+    async login(json_data) {
+        const response = await fetch('api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(json_data),
+            credentials: 'include'
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                this.setTokens(data.access_token, data.refresh_token);
-                // Сохраняем время истечения
-                this.setTokenExpiry('access', data.access_expires_in);
-                this.setTokenExpiry('refresh', data.refresh_expires_in);
-                
-                return true;
-            } else {
-                throw new Error('Login failed');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            return false;
+        if (response.ok) {
+            this.is_login = true;
+            return true;
+        } else {
+            console.log('error in login() auth.js')
+            const data = await response.json();
+            return data.error;
         }
     }
 
-    setTokens(accessToken, refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
-    }
-
-    setTokenExpiry(tokenType, expiresIn) {
-        const expiryTime = Date.now() + (expiresIn * 1000);
-        localStorage.setItem(`${tokenType}_token_expiry`, expiryTime.toString());
-    }
-
-    isTokenExpired(tokenType) {
-        const expiry = localStorage.getItem(`${tokenType}_token_expiry`);
-        if (!expiry) return true;
-        return Date.now() >= parseInt(expiry);
+    async register(json_data){
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(json_data),
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            this.is_login = true;
+            return true;
+        } else {
+            return data.error;
+        }
     }
 
     async refreshAccessToken() {
-        // Если уже обновляем токен, добавляем запрос в очередь
         if (this.isRefreshing) {
             return new Promise((resolve, reject) => {
                 this.failedQueue.push({ resolve, reject });
@@ -63,44 +56,25 @@ class AuthService {
         this.isRefreshing = true;
 
         try {
-            // Проверяем, не истек ли refresh token
-            if (this.isTokenExpired('refresh')) {
-                throw new Error('REFRESH_TOKEN_EXPIRED');
-            }
-
             const response = await fetch('api/refresh', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.refreshToken}`
-                }
+                credentials: 'include'
             });
 
             if (response.ok) {
-                const data = await response.json();
-                this.accessToken = data.access_token;
-                localStorage.setItem('access_token', data.access_token);
-                this.setTokenExpiry('access', data.access_expires_in);
-
-                // Обрабатываем очередь запросов
+                // Токен обновлен, сервер установил новую куку
                 this.failedQueue.forEach(({ resolve }) => resolve());
                 this.failedQueue = [];
-
                 return true;
             } else {
                 const errorData = await response.json();
-                
-                if (errorData.error === 'refresh_token_expired') {
-                    throw new Error('REFRESH_TOKEN_EXPIRED');
-                } else {
-                    throw new Error('REFRESH_FAILED');
-                }
+                throw new Error(errorData.error || 'REFRESH_FAILED');
             }
         } catch (error) {
-            // Обрабатываем ошибки в очереди
             this.failedQueue.forEach(({ reject }) => reject(error));
             this.failedQueue = [];
 
-            if (error.message === 'REFRESH_TOKEN_EXPIRED') {
+            if (error.message === 'REFRESH_TOKEN_EXPIRED' || error.message === 'refresh_token_expired') {
                 this.handleRefreshTokenExpired();
             }
             
@@ -112,21 +86,11 @@ class AuthService {
 
     handleRefreshTokenExpired() {
         console.log('Refresh token истек. Требуется полная переаутентификация.');
-        
-        // Очищаем токены
         this.logout();
-        
-        // Показываем пользователю сообщение
         this.showReauthenticationRequired();
-        
-        // Перенаправляем на страницу логина
-        setTimeout(() => {
-            window.location.href = '/login?reason=session_expired';
-        }, 2000);
     }
 
     showReauthenticationRequired() {
-        // Показываем красивое сообщение пользователю
         const message = document.createElement('div');
         message.style.cssText = `
             position: fixed;
@@ -143,46 +107,27 @@ class AuthService {
         document.body.appendChild(message);
         
         setTimeout(() => {
-            document.body.removeChild(message);
+            if (document.body.contains(message)) {
+                document.body.removeChild(message);
+            }
         }, 5000);
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
-        // Проверяем, не истек ли access token
-        if (this.isTokenExpired('access') && !this.isTokenExpired('refresh')) {
+        options.credentials = 'include';
+
+        let response = await fetch(url, options);
+        
+        // Если access token истек, пробуем обновить
+        if (response.status === 401) {
             try {
                 await this.refreshAccessToken();
+                // Повторяем исходный запрос с обновленным токеном
+                response = await fetch(url, options);
             } catch (error) {
-                if (error.message === 'REFRESH_TOKEN_EXPIRED') {
-                    // Уже обработано в handleRefreshTokenExpired
-                    return;
-                }
-                throw error;
-            }
-        }
-
-        if (!this.accessToken) {
-            throw new Error('No access token');
-        }
-
-        options.headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${this.accessToken}`
-        };
-        let response = await fetch(url, options);
-        // Если access token истек на сервере (маловероятно, но возможно)
-        if (response.status === 401) {
-            const errorData = await response.json();
-            
-            if (errorData.error === 'access_token_expired') {
-                if (!this.isTokenExpired('refresh')) {
-                    await this.refreshAccessToken();
-                    options.headers['Authorization'] = `Bearer ${this.accessToken}`;
-                    response = await fetch(url, options);
-                } else {
-                    this.handleRefreshTokenExpired();
-                    return;
-                }
+                // Если обновление не удалось, разлогиниваем
+                this.handleRefreshTokenExpired();
+                return null;
             }
         }
 
@@ -190,40 +135,48 @@ class AuthService {
     }
 
     logout() {
-        // Отправляем запрос на сервер для добавления в черный список
-
-        if (this.accessToken) {
-            fetch('api/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.accessToken}`,
-                },
-                body: JSON.stringify({'refresh_token': this.refreshToken})
-            }).catch(console.error);
-        }
-        // Очищаем локальное хранилище
-        this.accessToken = null;
-        this.refreshToken = null;
+        // Отправляем запрос на сервер для logout
+        fetch('api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        }).catch(console.error);
+        
+        // Очищаем состояние
         this.is_login = false;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('access_token_expiry');
-        localStorage.removeItem('refresh_token_expiry');
+        
+        // Принудительно перенаправляем на главную
+        window.location.href = '/';
     }
 
-    isAuthenticated() {
-        return !this.isTokenExpired('access') || !this.isTokenExpired('refresh');
+    async isAuthenticated() {
+        try {
+            // Делаем запрос к защищенному эндпоинту для проверки аутентификации
+            const response = await fetch('/api/check-auth', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                this.is_login = true;
+                return true;
+            } else {
+                this.is_login = false;
+                return false;
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            this.is_login = false;
+            return false;
+        }
     }
 
     // Периодическая проверка состояния аутентификации
     startTokenMonitor() {
-        setInterval(() => {
-            if (this.is_login){
-                if (this.isTokenExpired('refresh')) {
+        setInterval(async () => {
+            if (this.is_login) {
+                const isAuth = await this.isAuthenticated();
+                if (!isAuth) {
                     this.handleRefreshTokenExpired();
-                } else if (this.isTokenExpired('access') && !this.isRefreshing) {
-                    this.refreshAccessToken().catch(console.error);
                 }
             }
         }, 60000); // Проверка каждую минуту
@@ -242,23 +195,17 @@ async function handleLogin(event) {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
-    const success = await authService.login(username, password);
-    if (success) {
-        this.is_login = success;
-        window.location.href = '/dashboard';
+    const success = await authService.login({username, password});
+    if (success === true) {
+        window.location.href = '/';
     } else {
         alert('Ошибка входа. Проверьте логин и пароль.');
     }
 }
 
-function handleLogout() {
-    authService.logout();
-    window.location.href = '/';
-}
-
-async function fetchProtectedData() {
+async function fetchProtectedData(url='/api/protected-data') {
     try {
-        const response = await authService.makeAuthenticatedRequest('/api/protected-data');
+        const response = await authService.makeAuthenticatedRequest(url);
         if (response && response.ok) {
             const data = await response.json();
             return data;
@@ -268,8 +215,10 @@ async function fetchProtectedData() {
     }
 }
 
-function checkAuth() {
-    if (!authService.isAuthenticated() && !window.location.pathname.includes('/login')) {
+// Функция для проверки аутентификации и перенаправления
+async function checkAuth() {
+    const isAuthenticated = await authService.isAuthenticated();
+    if (!isAuthenticated && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
     }
 }
