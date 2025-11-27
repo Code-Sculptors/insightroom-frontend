@@ -624,7 +624,11 @@
 
 /* Темная тема */
 body.dark-theme .animated-bg {
-    background: linear-gradient(-45deg, #2c3e50, #34495e, #4a6572, #556f7a);
+    /*background: linear-gradient(-45deg, #2c3e50, #34495e, #4a6572, #556f7a);*/
+    /*background: linear-gradient(-45deg, #0a0a1a, #0f1420, #1a1f2b, #0c0e17);*/
+    background: linear-gradient(-45deg, #0d1b2a, #1b263b, #415a77, #000000);
+    /*background: linear-gradient(-45deg, #000000, #0a1929, #162447, #000000);*/
+    
 }
 
 body.auto-theme {
