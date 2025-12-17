@@ -21,8 +21,8 @@
             <nav class="nav">
                 <div class="meeting-info">
                     <span id="meetingId">ID: {{ room_url }}</span>
-                    <!--<span id="meetingTimer">⏰ 00:00:00</span>-->
-                    <span id="participantCount">👥 {{ participants_count if participants_count else 1 }}</span>
+                    <span id="meetingTimer">⏰ 00:00:00</span>
+                    <span id="participantCount">👥 1</span>
                 </div>
             </nav>
         </div>
@@ -35,7 +35,7 @@
                 <img src="{{ url_for('static', filename='images/contacts-icon.png') }}" alt="Участники">
             </button>
 
-            <!-- Левая панель - видео участников -->
+            <!-- Левая панель - видео участников (все участники включая себя) -->
             <div class="left-panel" id="leftPanel">
                 <div class="video-panel-header">
                     <h3 class="video-panel-title">Участники</h3>
@@ -53,29 +53,7 @@
                             <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon muted" id="localVideoStatus">
                         </div>
                     </div>
-                    <!-- Удаленные участники -->
-                    {% if participants %}
-                        {% for participant in participants %}
-                        <div class="video-participant-card remote-user" id="participant-{{ participant.id }}">
-                            <div class="video-placeholder">
-                                <div class="participant-avatar">{{ participant.name[:2]|upper if participant.name else 'УЧ' }}</div>
-                                <video class="remote-video" autoplay playsinline style="display: none;"></video>
-                            </div>
-                            <div class="participant-name">{{ participant.name or 'Участник' }}</div>
-                            <div class="participant-status">
-                                <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon muted" id="audio-{{ participant.id }}">
-                                <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon muted" id="video-{{ participant.id }}">
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
                 </div>
-
-                {% if not participants %}
-                <div class="empty-state">
-                    <p>Нет других участников</p>
-                </div>
-                {% endif %}
             </div>
 
             <!-- Центральная панель - главное видео -->
@@ -83,8 +61,9 @@
                 <div class="main-video-container" id="mainVideoContainer">
                     <div class="video-placeholder active" id="mainVideoPlaceholder">
                         <div class="placeholder-content">
-                            <div class="user-avatar large" id="mainUserAvatar">{{ user_name[:2]|upper if user_name else 'УЧ' }}</div>
+                            <div class="user-avatar large" id="mainUserAvatar">{{ user_name[:2]|upper if user_name else 'У' }}</div>
                             <div class="user-name" id="mainUserName">{{ user_name or 'Участник' }}</div>
+                            <div class="user-status">Камера выключена</div>
                         </div>
                     </div>
                     <video id="mainVideo" class="main-video" autoplay playsinline></video>
@@ -107,7 +86,7 @@
                 <!-- По умолчанию показываем список участников -->
                 <div class="sidebar" id="participantsListSidebar">
                     <div class="sidebar-header">
-                        <h3 class="sidebar-title">Список участников (<span id="participantsCount">{{ participants_count if participants_count else 1 }}</span>)</h3>
+                        <h3 class="sidebar-title">Список участников (<span id="participantsCount">1</span>)</h3>
                     </div>
                     <div class="participants-list" id="participantsList">
                         <!-- Текущий пользователь -->
@@ -122,30 +101,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Удаленные участники в списке -->
-                        {% if participants %}
-                            {% for participant in participants %}
-                            <div class="participant-list-item remote-user" id="list-item-{{ participant.id }}">
-                                <div class="participant-info">
-                                    <div class="participant-details">
-                                        <div class="participant-name">{{ participant.name or 'Участник' }}</div>
-                                    </div>
-                                    <div class="participant-controls">
-                                        <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon" id="list-audio-{{ participant.id }}">
-                                        <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon" id="list-video-{{ participant.id }}">
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% endif %}
                     </div>
-
-                    {% if not participants %}
-                    <div class="empty-state">
-                        <p>Нет других участников</p>
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Чат (скрыт по умолчанию) -->
@@ -155,21 +111,6 @@
                     </div>
                     <div class="chat-messages" id="chatMessages">
                         <!-- Сообщения будут добавляться динамически -->
-                         {% if chat_messages %}
-                            {% for message in chat_messages %}
-                            <div class="message {% if message.is_own %}own-message{% else %}remote-message{% endif %}">
-                                <div class="message-header">
-                                    <span class="message-sender">{{ message.sender }}</span>
-                                    <span class="message-time">{{ message.time }}</span>
-                                </div>
-                                <div class="message-text">{{ message.text }}</div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-state">
-                                <p>Нет сообщений</p>
-                            </div>
-                        {% endif %}
                     </div>
                     <div class="chat-input-container">
                         <input type="text" class="chat-input" id="chatInput" placeholder="Введите сообщение..." onkeypress="handleChatInputKeypress(event)">
@@ -215,8 +156,9 @@
 
     <!-- SocketIO клиент -->
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/conference.js') }}"></script>
     
-    <!-- Единый расширенный скрипт с WebRTC -->
+    <!-- Исправленная логика управления -->
     <script>
         // Глобальные переменные с четким состоянием
         let localStream = null;
@@ -226,25 +168,15 @@
         let analyser = null;
         let speakingCheckInterval = null;
         
-        // WebRTC переменные
-        let peerConnections = {};
-        let socket = null;
-        let roomUrl = null;
-        let userName = '';
-        let candidateQueue = {};
-        let yourSocketId = null;
-        let remoteStreams = {};
-        let remoteIntervals = {};
-        
         // Состояния медиа
         let mediaState = {
             audioEnabled: false,
             videoEnabled: false,
             screenSharing: false,
-            whiteboardActive: false
+            whiteboardActive: false  // Добавляем состояние доски
         };
 
-        /*// Таймер встречи
+        // Таймер встречи
         function updateMeetingTimer() {
             const now = Date.now();
             const diff = now - meetingStartTime;
@@ -258,13 +190,10 @@
             }
         }
         
-        setInterval(updateMeetingTimer, 1000);*/
+        setInterval(updateMeetingTimer, 1000);
 
         // Основная инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            // Инициализация WebRTC
-            initWebRTC();
-            
             // Сразу устанавливаем кнопки в красное состояние
             forceRedButtons();
             initializeMedia();
@@ -273,479 +202,6 @@
             updateParticipantCount();
             setupAudioAnalysis();
         });
-
-        // Инициализация WebRTC
-        function initWebRTC() {
-            const pathParts = window.location.pathname.split('/');
-            roomUrl = pathParts[pathParts.length - 1];
-            userName = document.body.getAttribute('data-user-name') || 'Участник';
-            
-            // Инициализация Socket.IO
-            socket = io();
-            
-            socket.on('connect', () => {
-                console.log('Подключен к серверу сигналинга');
-                socket.emit('join-room', {
-                    roomUrl: roomUrl,
-                    userName: userName
-                });
-            });
-
-            socket.on('connected', (data) => {
-                console.log('Сокет подключен:', data);
-            });
-
-            socket.on('room-users', (data) => {
-                console.log('Текущие участники:', data.users);
-                yourSocketId = data.yourId;
-                
-                data.users.forEach(user => {
-                    if (user.id !== yourSocketId) {
-                        console.log('Создаем соединение с существующим участником:', user.name);
-                        createPeerConnection(user.id, user.name);
-                    }
-                });
-            });
-
-            socket.on('user-joined', (data) => {
-                console.log('Новый участник присоединился:', data);
-                createPeerConnection(data.userId, data.userName);
-                updateParticipantCount();
-                showNotification(`${data.userName} присоединился к встрече`);
-            });
-
-            socket.on('user-left', (data) => {
-                console.log('Участник вышел:', data);
-                removePeerConnection(data.userId);
-                updateParticipantCount();
-                showNotification(`${data.userName} покинул встречу`);
-            });
-
-            socket.on('webrtc-offer', async (data) => {
-                console.log('Получен OFFER от:', data.from);
-                await handleOffer(data.offer, data.from);
-            });
-
-            socket.on('webrtc-answer', async (data) => {
-                console.log('Получен ANSWER от:', data.from);
-                await handleAnswer(data.answer, data.from);
-            });
-
-            socket.on('ice-candidate', async (data) => {
-                console.log('Получен ICE кандидат от:', data.from);
-                await handleIceCandidate(data.candidate, data.from);
-            });
-
-            socket.on('error', (data) => {
-                console.error('Ошибка сокета:', data);
-                showError(data.message);
-            });
-        }
-
-        // Создание PeerConnection
-        function createPeerConnection(userId, userName) {
-            if (peerConnections[userId]) {
-                console.log('PeerConnection уже существует для:', userId);
-                return peerConnections[userId];
-            }
-
-            console.log('Создание нового PeerConnection для:', userName, '(' + userId + ')');
-
-            const peerConnection = new RTCPeerConnection({
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            });
-
-            // Добавляем локальный поток
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
-                console.log('Локальные треки добавлены в PeerConnection');
-            }
-
-            // Обработчики событий WebRTC
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    console.log('Отправляем ICE кандидат для:', userId);
-                    socket.emit('ice-candidate', {
-                        to: userId,
-                        candidate: event.candidate
-                    });
-                }
-            };
-
-            peerConnection.ontrack = (event) => {
-                console.log('Получен удаленный поток от:', userName);
-                
-                if (event.streams && event.streams[0]) {
-                    remoteStreams[userId] = event.streams[0];
-                    addRemoteVideo(userId, userName, event.streams[0]);
-                    
-                    // Запускаем отслеживание статуса для этого пользователя
-                    startRemoteStatusMonitoring(userId, event.streams[0]);
-                }
-            };
-
-            peerConnection.onconnectionstatechange = () => {
-                console.log(`Состояние соединения с ${userName}:`, peerConnection.connectionState);
-                
-                if (peerConnection.connectionState === 'connected') {
-                    console.log(`P2P соединение установлено с ${userName}`);
-                    const participantElement = document.getElementById(`participant-${userId}`);
-                    if (participantElement) {
-                        participantElement.classList.add('speaking');
-                    }
-                } else if (peerConnection.connectionState === 'disconnected' || 
-                           peerConnection.connectionState === 'failed') {
-                    const participantElement = document.getElementById(`participant-${userId}`);
-                    if (participantElement) {
-                        participantElement.classList.remove('speaking');
-                    }
-                }
-            };
-
-            peerConnections[userId] = peerConnection;
-            candidateQueue[userId] = [];
-            
-            console.log('PeerConnection создан, создаем OFFER для:', userId);
-            setTimeout(() => createOffer(userId), 500);
-            
-            return peerConnection;
-        }
-
-        // Создание offer
-        async function createOffer(userId) {
-            try {
-                const peerConnection = peerConnections[userId];
-                if (!peerConnection) {
-                    console.error('PeerConnection не найден при создании offer для:', userId);
-                    return;
-                }
-                
-                console.log('Создаем OFFER для:', userId);
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                
-                console.log('OFFER создан, отправляем через сокет:', userId);
-                socket.emit('webrtc-offer', {
-                    to: userId,
-                    offer: offer
-                });
-                
-            } catch (error) {
-                console.error('Ошибка создания offer:', error);
-            }
-        }
-
-        // Обработка offer
-        async function handleOffer(offer, fromUserId) {
-            console.log('Обрабатываем OFFER от:', fromUserId);
-            
-            let peerConnection = peerConnections[fromUserId];
-            if (!peerConnection) {
-                console.log('PeerConnection не найден, создаем новый для:', fromUserId);
-                peerConnection = createPeerConnection(fromUserId, 'Участник');
-            }
-
-            try {
-                await peerConnection.setRemoteDescription(offer);
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                
-                socket.emit('webrtc-answer', {
-                    to: fromUserId,
-                    answer: answer
-                });
-                
-                processQueuedCandidates(fromUserId);
-                
-            } catch (error) {
-                console.error("Ошибка обработки offer:", error);
-            } 
-        }
-
-        // Обработка answer
-        async function handleAnswer(answer, fromUserId) {
-            console.log('Обрабатываем ANSWER от:', fromUserId);
-            
-            try {
-                const peerConnection = peerConnections[fromUserId];
-                if (peerConnection) {
-                    await peerConnection.setRemoteDescription(answer);
-                    processQueuedCandidates(fromUserId);
-                } else {
-                    console.error('PeerConnection не найден для answer от:', fromUserId);
-                }
-            } catch (error) {
-                console.error('Ошибка обработки answer:', error);
-            }
-        }
-
-        // Обработка ICE кандидата
-        async function handleIceCandidate(candidate, fromUserId) {
-            console.log('Обрабатываем ICE кандидат от:', fromUserId);
-            
-            const pc = peerConnections[fromUserId];
-            if (!pc) {
-                console.error('PeerConnection не найден для ICE кандидата от:', fromUserId);
-                return;
-            }
-
-            try {
-                if (pc.remoteDescription && pc.remoteDescription.type) {
-                    await pc.addIceCandidate(candidate);
-                    console.log('ICE кандидат добавлен для:', fromUserId);
-                } else {
-                    if (!candidateQueue[fromUserId]) {
-                        candidateQueue[fromUserId] = [];
-                    }
-                    candidateQueue[fromUserId].push(candidate);
-                    console.log('ICE кандидат добавлен в буфер для:', fromUserId);
-                }
-            } catch (error) {
-                console.error('Ошибка добавления ICE кандидата:', error);
-            }
-        }
-
-        // Обработка отложенных кандидатов
-        async function processQueuedCandidates(userId) {
-            const queue = candidateQueue[userId];
-            if (queue && queue.length > 0) {
-                console.log(`Обрабатываем ${queue.length} кандидатов из буфера для:`, userId);
-                
-                for (const candidate of queue) {
-                    try {
-                        await peerConnections[userId].addIceCandidate(candidate);
-                    } catch (error) {
-                        console.error('Ошибка добавления отложенного ICE кандидата:', error);
-                    }
-                }
-                candidateQueue[userId] = [];
-            }
-        }
-
-        // Добавление удаленного видео
-        function addRemoteVideo(userId, userName, stream) {
-            console.log('Добавляем удаленное видео для:', userName);
-            
-            const participantsGrid = document.getElementById('videoParticipantsList');
-            if (!participantsGrid) {
-                console.error('Элемент videoParticipantsList не найден!');
-                return;
-            }
-            
-            // Удаляем существующий элемент если есть
-            const existingElement = document.getElementById(`participant-${userId}`);
-            if (existingElement) {
-                existingElement.remove();
-            }
-            
-            const initials = userName ? userName.slice(0, 2).toUpperCase() : 'УЧ';
-            
-            const participantCard = document.createElement('div');
-            participantCard.className = 'video-participant-card remote-user';
-            participantCard.id = `participant-${userId}`;
-            
-            participantCard.innerHTML = `
-                <div class="video-placeholder">
-                    <div class="participant-avatar">${initials}</div>
-                    <video class="remote-video" autoplay playsinline style="display: none;"></video>
-                </div>
-                <div class="participant-name">${userName}</div>
-                <div class="participant-status">
-                    <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon muted" id="audio-${userId}">
-                    <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon muted" id="video-${userId}">
-                </div>
-            `;
-            
-            const videoElement = participantCard.querySelector('.remote-video');
-            const placeholder = participantCard.querySelector('.video-placeholder');
-            const avatar = participantCard.querySelector('.participant-avatar');
-            
-            console.log('Устанавливаем srcObject для удаленного видео');
-            videoElement.srcObject = stream;
-            
-            // Обработчики для видео
-            videoElement.onloadedmetadata = () => {
-                console.log('Метаданные удаленного видео загружены для:', userName);
-                videoElement.play().catch(e => {
-                    console.error('Ошибка автовоспроизведения:', e);
-                });
-            };
-            
-            videoElement.onloadeddata = () => {
-                console.log('Данные удаленного видео загружены для:', userName);
-                placeholder.style.display = 'none';
-                videoElement.style.display = 'block';
-            };
-            
-            videoElement.oncanplay = () => {
-                console.log('Удаленное видео может воспроизводиться для:', userName);
-                placeholder.style.display = 'none';
-                videoElement.style.display = 'block';
-            };
-            
-            videoElement.onerror = (e) => {
-                console.error('Ошибка загрузки удаленного видео для:', userName, e);
-                placeholder.style.display = 'flex';
-                avatar.style.display = 'flex';
-            };
-            
-            participantsGrid.appendChild(participantCard);
-            updateParticipantCount();
-            
-            // Добавляем в список участников справа
-            addToParticipantsList(userId, userName);
-            
-            console.log('Удаленное видео добавлено в DOM для:', userName);
-        }
-
-        // Добавление в список участников справа
-        function addToParticipantsList(userId, userName) {
-            const participantsList = document.getElementById('participantsList');
-            if (!participantsList) return;
-            
-            const existingItem = document.getElementById(`list-item-${userId}`);
-            if (existingItem) {
-                existingItem.remove();
-            }
-            
-            const listItem = document.createElement('div');
-            listItem.className = 'participant-list-item remote-user';
-            listItem.id = `list-item-${userId}`;
-            
-            listItem.innerHTML = `
-                <div class="participant-info">
-                    <div class="participant-details">
-                        <div class="participant-name">${userName}</div>
-                    </div>
-                    <div class="participant-controls">
-                        <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon" id="list-audio-${userId}">
-                        <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon" id="list-video-${userId}">
-                    </div>
-                </div>
-            `;
-            
-            participantsList.appendChild(listItem);
-        }
-
-        // Отслеживание статуса удаленного участника
-        function startRemoteStatusMonitoring(userId, stream) {
-            // Останавливаем предыдущий интервал, если был
-            if (remoteIntervals[userId]) {
-                clearInterval(remoteIntervals[userId]);
-            }
-
-            // Создаем новый интервал для проверки статуса
-            remoteIntervals[userId] = setInterval(() => {
-                updateRemoteStatusIndicators(userId, stream);
-            }, 1000);
-
-            // Первоначальное обновление
-            updateRemoteStatusIndicators(userId, stream);
-        }
-
-        // Обновление индикаторов статуса удаленного участника
-        function updateRemoteStatusIndicators(userId, stream) {
-            const audioTracks = stream.getAudioTracks();
-            const videoTracks = stream.getVideoTracks();
-            
-            const audioEnabled = audioTracks.length > 0 && audioTracks[0].enabled;
-            const videoEnabled = videoTracks.length > 0 && videoTracks[0].enabled;
-            
-            // Обновляем иконки в левой панели
-            const audioIndicator = document.getElementById(`audio-${userId}`);
-            const videoIndicator = document.getElementById(`video-${userId}`);
-            
-            if (audioIndicator) {
-                audioIndicator.src = audioEnabled ? 
-                    "{{ url_for('static', filename='images/mic-on.png') }}" : 
-                    "{{ url_for('static', filename='images/mic-off.png') }}";
-                audioIndicator.classList.toggle('muted', !audioEnabled);
-            }
-            
-            if (videoIndicator) {
-                videoIndicator.src = videoEnabled ? 
-                    "{{ url_for('static', filename='images/camera-on.png') }}" : 
-                    "{{ url_for('static', filename='images/camera-off.png') }}";
-                videoIndicator.classList.toggle('muted', !videoEnabled);
-            }
-            
-            // Обновляем иконки в списке участников
-            const listAudioIndicator = document.getElementById(`list-audio-${userId}`);
-            const listVideoIndicator = document.getElementById(`list-video-${userId}`);
-            
-            if (listAudioIndicator) {
-                listAudioIndicator.src = audioEnabled ? 
-                    "{{ url_for('static', filename='images/mic-on.png') }}" : 
-                    "{{ url_for('static', filename='images/mic-off.png') }}";
-            }
-            
-            if (listVideoIndicator) {
-                listVideoIndicator.src = videoEnabled ? 
-                    "{{ url_for('static', filename='images/camera-on.png') }}" : 
-                    "{{ url_for('static', filename='images/camera-off.png') }}";
-            }
-            
-            // Обновляем отображение видео
-            const participantElement = document.getElementById(`participant-${userId}`);
-            if (participantElement) {
-                const videoElement = participantElement.querySelector('.remote-video');
-                const placeholder = participantElement.querySelector('.video-placeholder');
-                const avatar = participantElement.querySelector('.participant-avatar');
-                
-                if (videoElement && placeholder && avatar) {
-                    if (videoEnabled) {
-                        placeholder.style.display = 'none';
-                        videoElement.style.display = 'block';
-                        avatar.style.display = 'none';
-                    } else {
-                        placeholder.style.display = 'flex';
-                        videoElement.style.display = 'none';
-                        avatar.style.display = 'flex';
-                    }
-                }
-            }
-        }
-
-        // Удаление PeerConnection
-        function removePeerConnection(userId) {
-            console.log('Удаление PeerConnection для:', userId);
-            
-            // Останавливаем интервал отслеживания статуса
-            if (remoteIntervals[userId]) {
-                clearInterval(remoteIntervals[userId]);
-                delete remoteIntervals[userId];
-            }
-            
-            if (peerConnections[userId]) {
-                peerConnections[userId].close();
-                delete peerConnections[userId];
-            }
-            
-            if (candidateQueue[userId]) {
-                delete candidateQueue[userId];
-            }
-            
-            if (remoteStreams[userId]) {
-                delete remoteStreams[userId];
-            }
-            
-            // Удаляем из левой панели
-            const participantElement = document.getElementById(`participant-${userId}`);
-            if (participantElement) {
-                participantElement.remove();
-            }
-            
-            // Удаляем из списка участников
-            const listItem = document.getElementById(`list-item-${userId}`);
-            if (listItem) {
-                listItem.remove();
-            }
-        }
 
         // Принудительно устанавливаем кнопки в красное состояние
         function forceRedButtons() {
@@ -840,7 +296,7 @@
             }
         }
 
-        // Проверка активности речи
+         // Проверка активности речи
         function checkSpeakingActivity() {
             if (!analyser || !mediaState.audioEnabled) {
                 document.getElementById('list-item-local').classList.remove('speaking');
@@ -1087,7 +543,8 @@
             if (leaveCallBtn) {
                 leaveCallBtn.addEventListener('click', function() {
                     if (confirm('Вы уверены, что хотите покинуть встречу?')) {
-                        leaveConference();
+                        stopAllMedia();
+                        window.location.href = '/';
                     }
                 });
             }
@@ -1168,29 +625,6 @@
             showNotification('Демонстрация экрана остановлена');
         }
 
-        // Выход из конференции
-        function leaveConference() {
-            console.log('Выход из конференции');
-            
-            if (socket) {
-                socket.emit('leave-room', {
-                    roomUrl: roomUrl
-                });
-            }
-            
-            Object.keys(peerConnections).forEach(userId => {
-                removePeerConnection(userId);
-            });
-            
-            stopAllMedia();
-            
-            if (socket) {
-                socket.disconnect();
-            }
-            
-            window.location.href = '/';
-        }
-
         // Остановка всех медиа потоков
         function stopAllMedia() {
             if (localStream) {
@@ -1234,8 +668,7 @@
 
         // Обновление счетчика участников
         function updateParticipantCount() {
-            const remoteParticipants = document.querySelectorAll('.remote-user').length;
-            const totalParticipants = remoteParticipants + 1;
+            const totalParticipants = 1;
             document.getElementById('participantCount').textContent = `👥 ${totalParticipants}`;
             document.getElementById('participantsCount').textContent = totalParticipants;
         }
@@ -1310,11 +743,6 @@
                     notification.remove();
                 }
             }, 3000);
-        }
-
-        // Показ ошибок
-        function showError(message) {
-            showNotification(`Ошибка: ${message}`);
         }
 
         // Создание кнопки для повторного запроса медиа
