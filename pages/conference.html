@@ -1,44 +1,76 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Конференция - Insight Room</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/conference.css') }}">
 </head>
-<body>
+<body data-user-name="{{ user_name }}">
     <div class="animated-bg"></div>
     
     <header class="header">
         <div class="container">
             <div class="logo">
-                <a href="../index.html" class="logo-link">Insight Room</a>
+                <a href="/" class="logo-link">Insight Room</a>
             </div>
             <nav class="nav">
                 <div class="meeting-info">
-                    <span id="meetingId">ID: Загрузка...</span>
-                    <span id="participantCount">👥 1</span>
+                    <span id="meetingId">ID: {{ room_url }}</span>
+                    <!--<span id="meetingTimer">⏰ 00:00:00</span>-->
+                    <span id="participantCount">👥 {{ participants_count if participants_count else 1 }}</span>
                 </div>
             </nav>
         </div>
     </header>
 
-    <main class="main">
-        <div class="conference-container">
-            <div class="participants-grid" id="participantsGrid">
-                <!-- Локальный пользователь -->
-                <div class="participant-card local-user">
-                    <div class="video-container">
-                        <video id="localVideo" class="user-video" autoplay muted></video>
-                        <div class="participant-info">
-                            <span class="participant-name" id="localUserName">Загрузка...</span>
+    <main class="main conference-main">
+        <div class="conference-layout">
+            <!-- Кнопка разворачивания левой панели (видна только на мобильных) -->
+            <button class="expand-left-panel" id="expandLeftPanel" title="Показать участников">
+                <img src="{{ url_for('static', filename='images/contacts-icon.png') }}" alt="Участники">
+            </button>
+
+            <!-- Левая панель - видео участников -->
+            <div class="left-panel" id="leftPanel">
+                <div class="video-panel-header">
+                    <h3 class="video-panel-title">Участники</h3>
+                </div>
+                <div class="video-participants-grid" id="videoParticipantsList">
+                    <!-- Текущий пользователь -->
+                    <div class="video-participant-card" id="participant-local">
+                        <div class="video-placeholder">
+                            <div class="participant-avatar">{{ user_name[:2]|upper if user_name else 'УЧ' }}</div>
+                            <video id="localVideoThumbnail" autoplay playsinline muted style="display: none;"></video>
+                        </div>
+                        <div class="participant-name">{{ user_name or 'Вы' }}</div>
+                        <div class="participant-status">
+                            <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon muted" id="localAudioStatus">
+                            <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon muted" id="localVideoStatus">
+                        </div>
+                    </div>
+                    <!-- Удаленные участники -->
+                    {% if participants %}
+                        {% for participant in participants %}
+                        <div class="video-participant-card remote-user" id="participant-{{ participant.id }}">
+                            <div class="video-placeholder">
+                                <div class="participant-avatar">{{ participant.name[:2]|upper if participant.name else 'УЧ' }}</div>
+                                <video class="remote-video" autoplay playsinline style="display: none;"></video>
+                            </div>
+                            <div class="participant-name">{{ participant.name or 'Участник' }}</div>
                             <div class="participant-status">
-                                <div class="status-indicator" id="localAudioStatus"></div>
-                                <div class="status-indicator" id="localVideoStatus"></div>
+                                <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon muted" id="audio-{{ participant.id }}">
+                                <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon muted" id="video-{{ participant.id }}">
                             </div>
                         </div>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> 00d0c03e0d3c0554f8a9e090b968bba43a129619
                         {% endfor %}
                     {% endif %}
                 </div>
@@ -89,10 +121,15 @@
                                     <div class="participant-name">{{ user_name or 'Вы' }}</div>
                                 </div>
                                 <div class="participant-controls">
+<<<<<<< HEAD
                                     <img src="{{ url_for('static', filename='images/mic-off.png') }}" 
                                         alt="Микрофон" class="status-icon muted" id="listAudioStatus">
                                     <img src="{{ url_for('static', filename='images/camera-off.png') }}" 
                                         alt="Камера" class="status-icon muted" id="listVideoStatus">
+=======
+                                    <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon" id="listAudioStatus">
+                                    <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon" id="listVideoStatus">
+>>>>>>> 00d0c03e0d3c0554f8a9e090b968bba43a129619
                                 </div>
                             </div>
                         </div>
@@ -106,10 +143,15 @@
                                         <div class="participant-name">{{ participant.name or 'Участник' }}</div>
                                     </div>
                                     <div class="participant-controls">
+<<<<<<< HEAD
                                         <img src="{{ url_for('static', filename='images/mic-off.png') }}" 
                                             alt="Микрофон" class="status-icon muted" id="list-audio-{{ participant.id }}">
                                         <img src="{{ url_for('static', filename='images/camera-off.png') }}" 
                                             alt="Камера" class="status-icon muted" id="list-video-{{ participant.id }}">
+=======
+                                        <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon" id="list-audio-{{ participant.id }}">
+                                        <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon" id="list-video-{{ participant.id }}">
+>>>>>>> 00d0c03e0d3c0554f8a9e090b968bba43a129619
                                     </div>
                                 </div>
                             </div>
@@ -148,13 +190,17 @@
                         {% endif %}
                     </div>
                     <div class="chat-input-container">
+<<<<<<< HEAD
                         <textarea class="chat-input" id="chatInput" placeholder="Введите сообщение..." 
                             onkeypress="handleChatInputKeypress(event)" 
                             rows="1"></textarea>
                         <button class="send-btn" id="sendMessage" onclick="sendChatMessage()">
                             <img src="{{ url_for('static', filename='images/send-message-icon.png') }}" alt="Отправить">
                         </button>
->>>>>>> Stashed changes
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Введите сообщение..." onkeypress="handleChatInputKeypress(event)">
+                        <button class="send-btn" id="sendMessage" onclick="sendChatMessage()">
+                            <img src="{{ url_for('static', filename='images/send-message-icon.png') }}" alt="Отправить">
+                        </button>
                     </div>
                 </div>
             </div>
@@ -162,19 +208,48 @@
 
         <!-- Панель управления -->
         <div class="control-panel">
-            <button class="control-btn" id="toggleAudio" title="Микрофон">🎤</button>
-            <button class="control-btn" id="toggleVideo" title="Камера">📹</button>
-            <button class="control-btn" id="toggleScreen" title="Поделиться экраном">🖥️</button>
-            <button class="control-btn danger" id="leaveCall" title="Покинуть встречу">📞</button>
+            <button class="control-btn muted" id="toggleAudio" title="Микрофон">
+                <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="control-icon" id="toggleAudioIcon">
+            </button>
+            
+            <button class="control-btn muted" id="toggleVideo" title="Камера">
+                <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="control-icon" id="toggleVideoIcon">
+            </button>
+            
+            <button class="control-btn" id="toggleScreen" title="Поделиться экраном">
+                <img src="{{ url_for('static', filename='images/screen-share.png') }}" alt="Демонстрация экрана" class="control-icon" id="toggleScreenIcon">
+            </button>
+
+            <div class="control-separator"></div>
+
+            <button class="control-btn" id="toggleWhiteboardBtn" title="Доска">
+                <img src="{{ url_for('static', filename='images/whiteboard-new-icon.png') }}" alt="Доска" class="control-icon">
+            </button>
+
+            <button class="control-btn" id="toggleChatBtn" title="Чат">
+                <img src="{{ url_for('static', filename='images/chat-new-icon.png') }}" alt="Чат" class="control-icon">
+            </button>
+
+            <div class="control-separator"></div>
+            
+            <button class="control-btn danger" id="leaveCall" title="Покинуть встречу">
+                <img src="{{ url_for('static', filename='images/leave-call.png') }}" alt="Покинуть встречу" class="control-icon">
+            </button>
         </div>
     </main>
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     <script src="{{ url_for('static', filename='js/conference.js') }}"></script>
 =======
     <!-- SocketIO клиент -->
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
 
+=======
+    <!-- SocketIO клиент -->
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    
+>>>>>>> 00d0c03e0d3c0554f8a9e090b968bba43a129619
     <!-- Единый расширенный скрипт с WebRTC -->
     <script>
         // Глобальные переменные с четким состоянием
@@ -233,6 +308,11 @@
             updateParticipantCount();
             // Убираем автоматическую настройку анализа аудио
             // setupAudioAnalysis();
+            initializeMedia();
+            setupUIHandlers();
+            setupAdaptiveLayout();
+            updateParticipantCount();
+            setupAudioAnalysis();
         });
 
         // Инициализация WebRTC
@@ -320,6 +400,7 @@
             });
 
             // Добавляем локальный поток если он уже создан
+            // Добавляем локальный поток
             if (localStream) {
                 localStream.getTracks().forEach(track => {
                     peerConnection.addTrack(track, localStream);
@@ -579,6 +660,7 @@
             listItem.id = `list-item-${userId}`;
             
             // В правом блоке ТОЛЬКО иконки, НЕ добавляем классы для выделения
+
             listItem.innerHTML = `
                 <div class="participant-info">
                     <div class="participant-details">
@@ -589,6 +671,8 @@
                             alt="Микрофон" class="status-icon" id="list-audio-${userId}">
                         <img src="{{ url_for('static', filename='images/camera-off.png') }}" 
                             alt="Камера" class="status-icon" id="list-video-${userId}">
+                        <img src="{{ url_for('static', filename='images/mic-off.png') }}" alt="Микрофон" class="status-icon" id="list-audio-${userId}">
+                        <img src="{{ url_for('static', filename='images/camera-off.png') }}" alt="Камера" class="status-icon" id="list-video-${userId}">
                     </div>
                 </div>
             `;
@@ -632,6 +716,14 @@
                 if (audioIndicator.src !== audioSrc) {
                     audioIndicator.src = audioSrc;
                 }
+            // Обновляем иконки в левой панели
+            const audioIndicator = document.getElementById(`audio-${userId}`);
+            const videoIndicator = document.getElementById(`video-${userId}`);
+            
+            if (audioIndicator) {
+                audioIndicator.src = audioEnabled ? 
+                    "{{ url_for('static', filename='images/mic-on.png') }}" : 
+                    "{{ url_for('static', filename='images/mic-off.png') }}";
                 audioIndicator.classList.toggle('muted', !audioEnabled);
             }
             
@@ -678,6 +770,30 @@
             }
             
             // 4. Обновляем отображение видео в левом блоке
+                videoIndicator.src = videoEnabled ? 
+                    "{{ url_for('static', filename='images/camera-on.png') }}" : 
+                    "{{ url_for('static', filename='images/camera-off.png') }}";
+                videoIndicator.classList.toggle('muted', !videoEnabled);
+            }
+            
+            // Обновляем иконки в списке участников
+            const listAudioIndicator = document.getElementById(`list-audio-${userId}`);
+            const listVideoIndicator = document.getElementById(`list-video-${userId}`);
+            
+            if (listAudioIndicator) {
+                listAudioIndicator.src = audioEnabled ? 
+                    "{{ url_for('static', filename='images/mic-on.png') }}" : 
+                    "{{ url_for('static', filename='images/mic-off.png') }}";
+            }
+            
+            if (listVideoIndicator) {
+                listVideoIndicator.src = videoEnabled ? 
+                    "{{ url_for('static', filename='images/camera-on.png') }}" : 
+                    "{{ url_for('static', filename='images/camera-off.png') }}";
+            }
+            
+            // Обновляем отображение видео
+            const participantElement = document.getElementById(`participant-${userId}`);
             if (participantElement) {
                 const videoElement = participantElement.querySelector('.remote-video');
                 const placeholder = participantElement.querySelector('.video-placeholder');
@@ -916,6 +1032,64 @@
                 } else {
                     showNotification('Не удалось получить доступ к медиа');
                 }
+        async function initializeMedia() {
+            try {
+                console.log('Запрос разрешений на медиа...');
+                
+                // Запрашиваем доступ к камере и микрофону
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 }
+                    },
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    }
+                });
+
+                console.log('Медиа поток получен:', localStream);
+
+                // Настраиваем главное видео
+                const mainVideo = document.getElementById('mainVideo');
+                const mainPlaceholder = document.getElementById('mainVideoPlaceholder');
+                const localVideoThumbnail = document.getElementById('localVideoThumbnail');
+                
+                if (mainVideo) {
+                    mainVideo.srcObject = localStream;
+                    mainVideo.onloadeddata = () => {
+                        // Изначально камера и микрофон выключены
+                        const videoTrack = localStream.getVideoTracks()[0];
+                        const audioTrack = localStream.getAudioTracks()[0];
+                        
+                        if (videoTrack) videoTrack.enabled = false;
+                        if (audioTrack) audioTrack.enabled = false;
+                        
+                        // Обновляем состояние
+                        mediaState.audioEnabled = false;
+                        mediaState.videoEnabled = false;
+                        
+                        updateMediaUI();
+                        mainPlaceholder.style.display = 'flex';
+                        mainVideo.style.display = 'none';
+                    };
+                }
+
+                // Настраиваем видео для миниатюры
+                if (localVideoThumbnail) {
+                    localVideoThumbnail.srcObject = localStream;
+                }
+
+                showNotification('Камера и микрофон подключены');
+
+            } catch (error) {
+                console.error('Ошибка доступа к медиа:', error);
+                showNotification('Не удалось получить доступ к камере/микрофону');
+                
+                // Создаем кнопку для повторного запроса
+                createMediaPermissionButton();
             }
         }
 
@@ -935,6 +1109,10 @@
                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 }
                 
+            if (!localStream) return;
+            
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 const source = audioContext.createMediaStreamSource(localStream);
                 source.connect(analyser);
@@ -956,12 +1134,15 @@
                 // Убираем зеленую обводку ТОЛЬКО в левом блоке
                 document.getElementById('participant-local').classList.remove('speaking');
                 // В правом блоке НИКОГДА не добавляем/убираем класс 'speaking'
+                document.getElementById('list-item-local').classList.remove('speaking');
+                document.getElementById('participant-local').classList.remove('speaking');
                 return;
             }
             
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            
+
+            // Вычисляем средний уровень громкости
             let sum = 0;
             for (let i = 0; i < dataArray.length; i++) {
                 sum += dataArray[i];
@@ -992,6 +1173,26 @@
                 document.getElementById('participant-local').classList.remove('speaking');
             }
 
+            // Порог для определения активности речи
+            const speakingThreshold = 30;
+            const isSpeaking = average > speakingThreshold;
+            
+            // Обновляем визуальное отображение
+            const localListItem = document.getElementById('list-item-local');
+            const localParticipantCard = document.getElementById('participant-local');
+            if (isSpeaking) {
+                localListItem.classList.add('speaking');
+                localParticipantCard.classList.add('speaking');
+            } else {
+                localListItem.classList.remove('speaking');
+                localParticipantCard.classList.remove('speaking');
+            }
+        }
+
+        // Единая функция обновления UI состояния медиа
+        function updateMediaUI() {
+            console.log('Обновление UI медиа:', mediaState);
+            
             // Обновляем иконки на панели управления
             const toggleAudioIcon = document.getElementById('toggleAudioIcon');
             const toggleVideoIcon = document.getElementById('toggleVideoIcon');
@@ -1021,8 +1222,11 @@
                     toggleVideoBtn.classList.add('muted');
                 }
             }
-            
+
             // Обновляем индикатор текущего пользователя слева внизу
+
+            // Обновляем статусы в левой панели
+
             const localAudioStatus = document.getElementById('localAudioStatus');
             const localVideoStatus = document.getElementById('localVideoStatus');
             
@@ -1039,8 +1243,12 @@
                     "{{ url_for('static', filename='images/camera-off.png') }}";
                 localVideoStatus.classList.toggle('muted', !mediaState.videoEnabled);
             }
+
             
             // ОБНОВЛЯЕМ ИКОНКИ В СПИСКЕ УЧАСТНИКОВ СПРАВА
+
+            // Обновляем статусы в списке участников
+
             const listAudioStatus = document.getElementById('listAudioStatus');
             const listVideoStatus = document.getElementById('listVideoStatus');
             
@@ -1049,19 +1257,26 @@
                     "{{ url_for('static', filename='images/mic-on.png') }}" : 
                     "{{ url_for('static', filename='images/mic-off.png') }}";
             }
-            
+
             if (listVideoStatus) {
                 listVideoStatus.src = mediaState.videoEnabled ? 
                     "{{ url_for('static', filename='images/camera-on.png') }}" : 
                     "{{ url_for('static', filename='images/camera-off.png') }}";
             }
             
+
             // Обновляем миниатюру левого профиля (видео)
+
+            // Обновляем видео в миниатюре (левая панель) - независимо от демонстрации экрана
+
             const localVideoThumbnail = document.getElementById('localVideoThumbnail');
             const localAvatar = document.querySelector('#participant-local .participant-avatar');
             
             if (localVideoThumbnail && localAvatar) {
+
                 if (mediaState.videoEnabled && localVideoThumbnail.srcObject) {
+                if (mediaState.videoEnabled) {
+
                     localVideoThumbnail.style.display = 'block';
                     localAvatar.style.display = 'none';
                 } else {
@@ -1074,7 +1289,11 @@
             updateMainVideoDisplay();
         }
 
+
         // Убираем проверку на доску из toggleWhiteboard()
+
+        // Функция переключения доски
+
         function toggleWhiteboard() {
             mediaState.whiteboardActive = !mediaState.whiteboardActive;
             updateMainVideoDisplay();
@@ -1115,7 +1334,11 @@
                 if (whiteboardFrame) whiteboardFrame.style.display = 'none';
                 screenShareVideo.style.display = 'none';
                 
+
                 if (mediaState.videoEnabled && mainVideo.srcObject) {
+
+                if (mediaState.videoEnabled) {
+
                     mainPlaceholder.style.display = 'none';
                     mainVideo.style.display = 'block';
                 } else {
@@ -1124,6 +1347,7 @@
                 }
             }
         }
+
 
         // Убираем проверку на доску из toggleAudio()
         function toggleAudio() {
@@ -1177,6 +1401,31 @@
             } else {
                 // Если видеотрека нет, запрашиваем его
                 initializeMedia(false, true);
+
+        // Функция переключения аудио
+        function toggleAudio() {
+            if (!localStream) return;
+            
+            const audioTracks = localStream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                mediaState.audioEnabled = !mediaState.audioEnabled;
+                audioTracks[0].enabled = mediaState.audioEnabled;
+                updateMediaUI();
+                showNotification(mediaState.audioEnabled ? 'Микрофон включен' : 'Микрофон выключен');
+            }
+        }
+
+        // Функция переключения видео
+        function toggleVideo() {
+            if (!localStream) return;
+            
+            const videoTracks = localStream.getVideoTracks();
+            if (videoTracks.length > 0) {
+                mediaState.videoEnabled = !mediaState.videoEnabled;
+                videoTracks[0].enabled = mediaState.videoEnabled;
+                updateMediaUI();
+                showNotification(mediaState.videoEnabled ? 'Камера включена' : 'Камера выключена');
+
             }
         }
 
@@ -1359,6 +1608,20 @@
             mediaState.audioEnabled = false;
             mediaState.videoEnabled = false;
             mediaState.screenSharing = false;
+
+            }
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
+            if (speakingCheckInterval) {
+                clearInterval(speakingCheckInterval);
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+            // Сбрасываем состояние доски
+            mediaState.whiteboardActive = false;
+
         }
 
         // Настройка адаптивного layout
@@ -1394,6 +1657,7 @@
 
         // Функции для работы с чатом
         function handleChatInputKeypress(event) {
+
             if (event.key === 'Enter' && !event.ctrlKey && !event.shiftKey) {
                 event.preventDefault(); // Предотвращаем перенос строки при обычном Enter
                 sendChatMessage();
@@ -1417,6 +1681,13 @@
                 chatInput.addEventListener('input', autoResizeTextarea);
             }
         });
+
+
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
 
         function sendChatMessage() {
             const chatInput = document.getElementById('chatInput');
@@ -1488,13 +1759,42 @@
             showNotification(`Ошибка: ${message}`);
         }
 
+
         // Убрана функция createMediaPermissionButton()
+
+        // Создание кнопки для повторного запроса медиа
+        function createMediaPermissionButton() {
+            const retryBtn = document.createElement('button');
+            retryBtn.textContent = 'Разрешить камеру и микрофон';
+            retryBtn.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 25px;
+                font-size: 16px;
+                cursor: pointer;
+                z-index: 1001;
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+            `;
+            
+            retryBtn.addEventListener('click', function() {
+                retryBtn.remove();
+                initializeMedia();
+            });
+            
+            document.body.appendChild(retryBtn);
+        }
+
 
         // Обработка закрытия страницы
         window.addEventListener('beforeunload', function() {
             stopAllMedia();
         });
     </script>
->>>>>>> Stashed changes
 </body>
 </html>
