@@ -96,8 +96,8 @@
                         </div>
                         <div class="compact-list">
                             {% for meeting in current_meetings %}
-                            <div class="list-item clickable" onclick="showMeetingInfo('{{ meeting.id}}')" data-date="{{ meeting.date }}" data-time="{{ meeting.time }}">
-                                <div class="item-main">
+                            <div class="list-item" data-meeting-id="{{ meeting.id }}" data-date="{{ meeting.date }}" data-time="{{ meeting.time }}">
+                                <div class="item-main clickable" onclick="showMeetingInfo('{{ meeting.id}}')">
                                     <div class="item-header">
                                         <div class="item-title-wrapper">
                                             <h3 class="item-title" title="{{ meeting.title }}">{{ meeting.title }}</h3>
@@ -122,7 +122,11 @@
                                     <div class="meeting-actions-dropdown">
                                         <button class="dots-btn" onclick="toggleMeetingActions('{{ meeting.id }}', event)">⋮</button>
                                         <div class="dropdown-menu" id="dropdown-{{ meeting.id }}">
-                                            <button class="dropdown-item" onclick="openEditMeetingModal('{{ meeting.id }}', '{{ meeting.title }}', '{{ meeting.description }}')">
+                                            <button class="dropdown-item" 
+                                                    data-meeting-id="{{ meeting.id }}"
+                                                    data-meeting-title="{{ meeting.title }}"
+                                                    data-meeting-description="{{ meeting.description if meeting.description else '' }}"
+                                                    onclick="openEditMeetingModalFromButton(this)">
                                                 Изменить
                                             </button>
                                             <button class="dropdown-item delete" onclick="confirmDeleteMeeting('{{ meeting.id }}', '{{ meeting.title }}')">
@@ -157,8 +161,8 @@
                         
                         <div class="compact-list">
                             {% for meeting in all_meetings %}
-                            <div class="list-item clickable" onclick="showMeetingInfo('{{ meeting.id}}', event)" data-date="{{ meeting.date }}" data-time="{{ meeting.time }}">
-                                <div class="item-main">
+                            <div class="list-item" data-meeting-id="{{ meeting.id }}" data-date="{{ meeting.date }}" data-time="{{ meeting.time }}">
+                                <div class="item-main clickable" onclick="showMeetingInfo('{{ meeting.id}}', event)">
                                     <div class="item-header">
                                         <div class="item-title-wrapper">
                                             <h3 class="item-title" title="{{ meeting.title }}">{{ meeting.title }}</h3>
@@ -178,19 +182,7 @@
                                     <button type="button" class="action-btn small icon-btn" onclick="copyMeetingLink('{{ meeting.id }}', event)" title="Копировать ссылку">
                                         Ссылка
                                     </button>
-                                    
-                                    <!-- Три точки с выпадающим меню -->
-                                    <div class="meeting-actions-dropdown">
-                                        <button class="dots-btn" onclick="toggleMeetingActions('{{ meeting.id }}', event)">⋮</button>
-                                        <div class="dropdown-menu" id="dropdown-{{ meeting.id }}">
-                                            <button class="dropdown-item" onclick="openEditMeetingModal('{{ meeting.id }}', '{{ meeting.title }}', '{{ meeting.description }}')">
-                                                Изменить
-                                            </button>
-                                            <button class="dropdown-item delete" onclick="confirmDeleteMeeting('{{ meeting.id }}', '{{ meeting.title }}')">
-                                                Удалить
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <!-- Троеточие УДАЛЕНО из "Все встречи" -->
                                 </div>
                             </div>
                             {% endfor %}
@@ -287,7 +279,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Описание (необязательно)</label>
-                    <textarea class="form-textarea" id="meetingDescription" placeholder="О чем будет встреча..."></textarea>
+                    <textarea class="form-textarea" id="meetingDescription" placeholder="О чем будет встреча.."></textarea>
                 </div>
                 
                 <button type="submit" class="modal-btn">Запланировать встречу</button>
@@ -311,12 +303,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Дата</label>
-                        <input type="date" class="form-input" id="editMeetingDate" required>
+                        <input type="date" class="form-input" id="editMeetingDate">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Время</label>
-                        <input type="time" class="form-input" id="editMeetingTime" required>
+                        <input type="time" class="form-input" id="editMeetingTime">
                     </div>
                 </div>
                 
@@ -402,15 +394,9 @@
             <form id="editContactForm" class="modal-form">
                 <input type="hidden" id="editContactId" value="">
                 <div class="form-group">
-                    <label class="form-label">Имя контакта</label>
+                    <label class="form-label">Новое имя контакта</label>
                     <input type="text" class="form-input" id="editContactName" placeholder="Введите имя контакта" required>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Логин пользователя</label>
-                    <input type="text" class="form-input" id="editContactLogin" placeholder="Введите логин пользователя" required>
-                </div>
-                
                 <div class="button-group">
                     <button type="submit" class="modal-btn">Сохранить изменения</button>
                 </div>
@@ -423,11 +409,9 @@
         // Функция для логирования в консоль
         function logUserInput(formName, data) {
             console.log(`[FORM_SUBMIT] ${formName}`);
-            
             for (const [key, value] of Object.entries(data)) {
                 console.log(`  ${key}: ${value}`);
             }
-            
             console.log('---');
         }
 
@@ -458,210 +442,187 @@
             }
         }
 
-        // Функция для показа полной информации о встрече
+        // --- Вспомогательные функции UI (без изменений) ---
+
         function showMeetingInfo(meetingId, event) {
-            if (event) event.stopPropagation();
-            
-            // Найдем элемент встречи и получим данные
-            const meetingElement = event?.currentTarget.closest('.list-item') || document.querySelector(`[onclick*="${meetingId}"]`);
-            
+            if (event) { event.stopPropagation(); event.preventDefault(); }
+            const meetingElement = document.querySelector(`[data-meeting-id="${meetingId}"]`);
             if (meetingElement) {
                 const title = meetingElement.querySelector('.item-title').textContent || 'Нет названия';
                 const description = meetingElement.querySelector('.item-description')?.textContent || 'Нет описания';
-                const statusElement = meetingElement.querySelector('.status-badge');
-                const status = statusElement ? statusElement.textContent : 'Неизвестен';
-                
-                // Получим дополнительные данные о встрече (нужно добавить их в HTML)
+                const status = meetingElement.querySelector('.status-badge') ? meetingElement.querySelector('.status-badge').textContent : 'Неизвестен';
                 const meetingDate = meetingElement.dataset.date || 'Не указана';
                 const meetingTime = meetingElement.dataset.time || 'Не указано';
                 
-                // Форматируем информацию
-                const meetingInfo = `
-        <b>ID встречи:</b> ${meetingId}
-        <b>Название:</b> ${title}
-        <b>Статус:</b> ${status}
-        <b>Дата:</b> ${meetingDate}
-        <b>Время:</b> ${meetingTime}
-        <b>Описание:</b> ${description || 'Отсутствует'}
-                `.trim();
-                
-                console.log(`[MEETING_INFO] Полная информация:`, { meetingId, title, status, date: meetingDate, time: meetingTime });
+                const meetingInfo = `<b>ID:</b> ${meetingId}\n<b>Название:</b> ${title}\n<b>Статус:</b> ${status}\n<b>Дата:</b> ${meetingDate} ${meetingTime}\n<b>Описание:</b> ${description}`;
                 showToast('Информация о встрече', meetingInfo, 'info', 6000);
             } else {
-                console.log(`[MEETING_INFO] meeting.id: ${meetingId}`);
                 showToast('Информация о встрече', `ID встречи: ${meetingId}`, 'info', 4000);
             }
         }
 
-        // Функция для присоединения к встрече
         function joinMeeting(meetingId, event) {
-            if (event) event.stopPropagation();
-            console.log(`[JOIN_MEETING] meeting.id: ${meetingId}`);
-            showToast('Присоединение', `Подключаемся к встрече: ${meetingId}`, 'success');
+            if (event) { event.stopPropagation(); event.preventDefault(); }
+            window.open(`${window.location.origin}/conference/${meetingId}`)
         }
         
-        // Функция для копирования ссылки на встречу
         function copyMeetingLink(meetingId, event) {
-            if (event) event.stopPropagation();
-            navigator.clipboard.writeText(`${window.location.origin}/join/${meetingId}`).then(() => {
-                console.log(`[COPY_LINK] meeting.id: ${meetingId}`);
+            if (event) { event.stopPropagation(); event.preventDefault(); }
+            navigator.clipboard.writeText(`${window.location.origin}/conference/${meetingId}`).then(() => {
                 showToast('Ссылка скопирована!', ``, 'success');
             }).catch(err => {
-                console.log('Ошибка копирования', err);
                 showToast('Ошибка копирования', 'Не удалось скопировать ссылку', 'error');
             });
         }
 
-        // Функция для переключения выпадающего меню встречи
         function toggleMeetingActions(meetingId, event) {
-            if (event) event.stopPropagation();
-            
-            // Закрываем все открытые меню
+            if (event) { event.stopPropagation(); event.preventDefault(); }
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                if (menu.id !== `dropdown-${meetingId}`) {
-                    menu.classList.remove('show');
-                }
+                if (menu.id !== `dropdown-${meetingId}`) menu.classList.remove('show');
             });
-            
-            // Открываем/закрываем текущее меню
             const dropdown = document.getElementById(`dropdown-${meetingId}`);
             dropdown.classList.toggle('show');
         }
 
-        // Функция для подтверждения удаления встречи
         function confirmDeleteMeeting(meetingId, meetingTitle) {
-            event.stopPropagation();
             if (confirm(`Вы уверены, что хотите удалить встречу "${meetingTitle}"?`)) {
                 deleteMeeting(meetingId);
             }
         }
 
-        // Функция для удаления встречи
-        function deleteMeeting(meetingId) {
+        // --- ФУНКЦИИ С ЗАПРОСАМИ НА СЕРВЕР (ИЗМЕНЕНО НА authService) ---
+
+        async function deleteMeeting(meetingId) {
             console.log(`[DELETE_MEETING] meeting.id: ${meetingId}`);
-            showToast('Встреча удалена', '', 'success');
             
-            // Закрываем выпадающее меню
-            const dropdown = document.getElementById(`dropdown-${meetingId}`);
-            if (dropdown) dropdown.classList.remove('show');
-            
-            // Здесь нужно добавить AJAX запрос для удаления встречи
-            // fetch(`/api/delete_meeting/${meetingId}`, { method: 'DELETE' })
-            //   .then(response => {
-            //       if (response.ok) {
-            //           window.location.reload();
-            //       }
-            //   });
+            // ИСПОЛЬЗУЕМ authService ВМЕСТО fetch
+            const response = await authService.makeAuthenticatedRequest('api/delete-room', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({'room.id': meetingId})
+            });
+
+            // Если response null, значит рефреш не удался и юзера выкинуло на логин
+            if (!response) return;
+
+            if (response.ok) {
+                showToast('Встреча удалена', '', 'success');
+                const dropdown = document.getElementById(`dropdown-${meetingId}`);
+                if (dropdown) dropdown.classList.remove('show');
+                window.location.reload();
+            } else {
+                const errorData = await response.json();
+                showToast('Ошибка при удалении комнаты', `${errorData.error}`, 'error');
+            }
         }
 
-        // Функция для открытия модального окна изменения встречи
-        function openEditMeetingModal(meetingId, title, description) {
-            event.stopPropagation();
+        // --- Управление модальными окнами (без изменений) ---
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+                document.getElementById('settingsDropdown').classList.remove('show');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        function openEditMeetingModal(meetingId, title, description) { return; } // Старая функция, не используется
+
+        function openEditMeetingModalFromButton(button) {
+            const meetingId = button.getAttribute('data-meeting-id');
+            const title = button.getAttribute('data-meeting-title');
+            const description = button.getAttribute('data-meeting-description');
             
-            // Закрываем выпадающее меню
             const dropdown = document.getElementById(`dropdown-${meetingId}`);
             if (dropdown) dropdown.classList.remove('show');
             
             document.getElementById('editMeetingId').value = meetingId;
             document.getElementById('editMeetingTitle').value = title;
             document.getElementById('editMeetingDescription').value = description;
-            document.getElementById('editMeetingModal').classList.add('show');
-            
-            console.log(`[EDIT_MEETING_OPEN] id: ${meetingId}, title: "${title}"`);
+            openModal('editMeetingModal');
         }
 
-        function closeEditMeetingModal() {
-            document.getElementById('editMeetingModal').classList.remove('show');
+        function closeEditMeetingModal() { closeModal('editMeetingModal'); }
+
+        function deleteMeetingFromModal() {
+            const meetingId = document.getElementById('editMeetingId').value;
+            const meetingTitle = document.getElementById('editMeetingTitle').value;
+            if (confirm(`Вы уверены, что хотите удалить встречу "${meetingTitle}"?`)) {
+                deleteMeeting(meetingId);
+                closeEditMeetingModal();
+            }
         }
 
-        // Функция для открытия модального окна изменения контакта
         function openEditContactModal(contactId, name, login) {
-            event.stopPropagation();
-            
-            // Декодируем специальные символы
-            const decodedName = decodeHTMLEntities(name);
-            const decodedLogin = decodeHTMLEntities(login);
-            
             document.getElementById('editContactId').value = contactId;
-            document.getElementById('editContactName').value = decodedName;
-            document.getElementById('editContactLogin').value = decodedLogin;
-            document.getElementById('editContactModal').classList.add('show');
-            
-            console.log(`[EDIT_CONTACT_OPEN] id: ${contactId}, name: "${decodedName}", login: "${decodedLogin}"`);
+            document.getElementById('editContactName').value = decodeHTMLEntities(name);
+            openModal('editContactModal');
         }
 
-        // Вспомогательная функция для декодирования HTML сущностей
+        function closeEditContactModal() { closeModal('editContactModal'); }
+
         function decodeHTMLEntities(text) {
             if (!text) return '';
-            
-            // Создаем временный элемент для декодирования
             const textarea = document.createElement('textarea');
             textarea.innerHTML = text;
             return textarea.value;
         }
-        function closeEditContactModal() {
-            document.getElementById('editContactModal').classList.remove('show');
-        }
 
-        // Функция для удаления контакта
-        function deleteContact(contactId, contactName) {
-            event.stopPropagation();
+        async function deleteContact(contactId, contactName) {
             if (confirm(`Вы уверены, что хотите удалить контакт "${contactName}"?`)) {
-                console.log(`[DELETE_CONTACT] contact.id: ${contactId}, contact.name: ${contactName}`);
-                showToast('Контакт удален', `Контакт "${contactName}" удален`, 'success');
-                // Здесь нужно добавить AJAX запрос для удаления контакта
-                // fetch(`/api/delete_contact/${contactId}`, { method: 'DELETE' })
-                //   .then(response => {
-                //       if (response.ok) {
-                //           window.location.reload();
-                //       }
-                //   });
+                
+                // ИСПОЛЬЗУЕМ authService
+                const response = await authService.makeAuthenticatedRequest('api/delete-contact', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({'contactId': contactId})
+                });
+
+                if (!response) return;
+
+                if (response.ok) {
+                    showToast('Контакт удален', `Контакт "${contactName}" удален`, 'success');
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    showToast('Ошибка при удалении контакта', `${errorData.error}`, 'error');
+                }
             }
         }
 
-        // Функция для переключения темы
         function changeTheme(theme) {
-            // Устанавливаем класс для body
             document.body.className = theme + '-theme';
             localStorage.setItem('theme', theme);
-            
-            // Обновляем активные кнопки
             updateThemeButtons(theme);
-            
-            // Логируем смену темы
-            console.log(`[THEME_CHANGE] theme: ${theme}`);
         }
 
-        // Функция для обновления активных кнопок темы
         function updateThemeButtons(activeTheme) {
-            const themeButtons = document.querySelectorAll('.theme-option');
-            themeButtons.forEach(button => {
-                if (button.getAttribute('data-theme') === activeTheme) {
-                    button.classList.add('active');
-                } else {
-                    button.classList.remove('active');
-                }
+            document.querySelectorAll('.theme-option').forEach(button => {
+                if (button.getAttribute('data-theme') === activeTheme) button.classList.add('active');
+                else button.classList.remove('active');
             });
         }
 
-        // Функции для модальных окон
-        function openScheduleModal() {
-            document.getElementById('scheduleModal').classList.add('show');
-            document.getElementById('meetingDate').min = new Date().toISOString().split('T')[0];
-        }
+        function openScheduleModal() { openModal('scheduleModal'); document.getElementById('meetingDate').min = new Date().toISOString().split('T')[0]; }
+        function closeScheduleModal() { closeModal('scheduleModal'); }
+        function openJoinModal() { openModal('joinModal'); }
+        function closeJoinModal() { closeModal('joinModal'); }
+        function openCreateRoomModal() { openModal('createRoomModal'); }
+        function closeCreateRoomModal() { closeModal('createRoomModal'); }
+        function openAddContactModal() { openModal('addContactModal'); document.getElementById('addContactForm').reset(); }
+        function closeAddContactModal() { closeModal('addContactModal'); }
 
-        function closeScheduleModal() { document.getElementById('scheduleModal').classList.remove('show'); }
-        function openJoinModal() { document.getElementById('joinModal').classList.add('show'); }
-        function closeJoinModal() { document.getElementById('joinModal').classList.remove('show'); }
-        function openCreateRoomModal() { document.getElementById('createRoomModal').classList.add('show'); }
-        function closeCreateRoomModal() { document.getElementById('createRoomModal').classList.remove('show'); }
-        function openAddContactModal() { 
-            document.getElementById('addContactModal').classList.add('show');
-            document.getElementById('addContactForm').reset();
-        }
-        function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('show'); }
+        // --- ОБРАБОТЧИКИ ФОРМ (ИЗМЕНЕНО НА authService) ---
 
-        // Обработчики форм
         document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = {
@@ -669,100 +630,92 @@
                 'room.activation_time': `${document.getElementById('meetingDate').value}T${document.getElementById('meetingTime').value}`,
                 'room.description': document.getElementById('meetingDescription').value || '(empty)'
             };
-            logUserInput('SCHEDULE_MEETING', formData);
-            const response = await fetch('api/create-room', {
+            
+            // ИСПОЛЬЗУЕМ authService
+            const response = await authService.makeAuthenticatedRequest('api/create-room', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-                credentials: 'include'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
+
+            if (!response) return;
 
             if (response.ok) {
                 showToast('Встреча запланирована!', 'Данные будут обновлены', 'success');
-                logUserInput('SCHEDULE_MEETING', formData);
                 window.location.reload();
             } else {
                 const errorData = await response.json();
-                showToast('Ошбика при планировании комнаты', `${errorData.error}`, 'error')
-                console.log('ошибка при планировании комнаты', formData);
+                showToast('Ошибка при планировании комнаты', `${errorData.error}`, 'error');
             }
-            
             closeScheduleModal();
         });
 
-        // Обработчик формы изменения встречи
         document.getElementById('editMeetingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const meetingId = document.getElementById('editMeetingId').value;
             const formData = {
-                'meeting.id': meetingId,
-                'meeting.title': document.getElementById('editMeetingTitle').value,
-                'meeting.description': document.getElementById('editMeetingDescription').value || '(empty)'
+                'room.id': meetingId,
+                'room.name': document.getElementById('editMeetingTitle').value,
+                'room.activation_time': `${document.getElementById('editMeetingDate').value}T${document.getElementById('editMeetingTime').value}`,
+                'room.description': document.getElementById('editMeetingDescription').value || '(empty)'
             };
             
-            console.log(`[EDIT_MEETING]`, formData);
-            showToast('Изменения сохранены', 'Данные встречи обновлены', 'success');
-            
-            // Здесь нужно добавить AJAX запрос для сохранения изменений
-            // fetch('/api/edit_meeting', {
-            //     method: 'PUT',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify(formData)
-            // }).then(response => {
-            //     if (response.ok) {
-            //         window.location.reload();
-            //     }
-            // });
-            
+            // ИСПОЛЬЗУЕМ authService
+            const response = await authService.makeAuthenticatedRequest('/api/refactor_room', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+
+            if (!response) return;
+
+            if (response.ok) {
+                showToast('Изменения сохранены', 'Данные встречи обновлены', 'success');
+                window.location.reload();
+            } else {
+                const errorData = await response.json();
+                showToast('Ошибка при изменении комнаты', `${errorData.error}`, 'error');
+            }
             closeEditMeetingModal();
         });
 
-        // Обработчик формы изменения контакта
         document.getElementById('editContactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const contactId = document.getElementById('editContactId').value;
             const formData = {
                 'contact.id': contactId,
-                'contact.name': document.getElementById('editContactName').value,
-                'contact.login': document.getElementById('editContactLogin').value
+                'contact.name': document.getElementById('editContactName').value
             };
             
-            console.log(`[EDIT_CONTACT]`, formData);
-            showToast('Изменения сохранены', 'Данные контакта обновлены', 'success');
-            
-            // Здесь нужно добавить AJAX запрос для сохранения изменений
-            // fetch('/api/edit_contact', {
-            //     method: 'PUT',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify(formData)
-            // }).then(response => {
-            //     if (response.ok) {
-            //         window.location.reload();
-            //     }
-            // });
-            
+            // ИСПОЛЬЗУЕМ authService
+            const response = await authService.makeAuthenticatedRequest('/api/edit_contact', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+
+            if (!response) return;
+
+            if (response.ok) {
+                showToast('Изменения сохранены', 'Данные контакта обновлены', 'success');
+                window.location.reload();
+            } else {
+                const errorData = await response.json();
+                showToast('Ошибка при изменении контакта', `${errorData.error}`, 'error');
+            }
             closeEditContactModal();
         });
 
         document.getElementById('joinForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const meetingId = this.querySelector('input[name="meeting_id"]').value;
-            const formData = {
-                'meeting.id': meetingId
-            };
-            
-            logUserInput('JOIN_MEETING', formData);
-            
+            window.open(`${window.location.origin}/conference/${meetingId}`)
             showToast('Присоединение', `Подключаемся к встрече`, 'success');
             closeJoinModal();
         });
 
         document.getElementById('createRoomForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const formData = new FormData(this);
             const data = {
                 'room.name': formData.get('room_name'),
@@ -770,31 +723,27 @@
                 'room.activation_time': 'now'
             };
             
-            const response = await fetch('api/create-room', {
+            // ИСПОЛЬЗУЕМ authService
+            const response = await authService.makeAuthenticatedRequest('api/create-room', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-                credentials: 'include'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
+
+            if (!response) return;
 
             if (response.ok) {
                 showToast('Комната создана!', 'Данные будут обновлены', 'success');
-                logUserInput('CREATE_ROOM', data);
                 window.location.reload();
             } else {
                 const errorData = await response.json();
-                showToast('Ошбика при создании комнаты', `${errorData.error}`, 'error')
-                console.log('ошибка при создании комнаты', formData);
+                showToast('Ошибка при создании комнаты', `${errorData.error}`, 'error');
             }
-            
             closeCreateRoomModal();
         });
 
         document.getElementById('addContactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const contactName = document.getElementById('contactName').value.trim();
             const contactLogin = document.getElementById('contactLogin').value.trim();
             
@@ -803,52 +752,40 @@
                 'contact.login': contactLogin
             };
             
-            if (!contactName) {
-                showToast('Ошибка', 'Введите имя контакта', 'error');
+            if (!contactName || !contactLogin) {
+                showToast('Ошибка', 'Заполните все поля', 'error');
                 return;
             }
             
-            if (!contactLogin) {
-                showToast('Ошибка', 'Введите логин пользователя', 'error');
-                return;
-            }
-            //Сюда написать добавление контакта.
-            const response = await fetch('api/add_contact', {
+            // ИСПОЛЬЗУЕМ authService
+            const response = await authService.makeAuthenticatedRequest('api/add_contact', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-                credentials: 'include'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
+
+            if (!response) return;
 
             if (response.ok) {
                 showToast('Контакт добавлен!', `${contactName} добавлен в контакты`, 'success');
-                logUserInput('ADD_CONTACT', formData);
                 window.location.reload();
             } else {
                 const errorData = await response.json();
-                showToast('Ошбика при добавлении контакта', `${errorData.error}`, 'error')
-                console.log('ошибка при доблении контакта auth.js', formData);
+                showToast('Ошибка при добавлении контакта', `${errorData.error}`, 'error');
             }
             closeAddContactModal();
         });
 
-        // Остальные функции
         function toggleSettings() {
             document.getElementById('settingsDropdown').classList.toggle('show');
         }
 
         function updatePrivacySetting(setting, value) {
-            // Настройки сохраняются без уведомлений
             console.log(`[PRIVACY_SETTING] ${setting}: ${value}`);
         }
 
         function handleLogout() {
-            console.log(`[LOGOUT] user: {{ user_name }} ({{ user_login }})`);
             authService.logout();
-            showToast('Выход выполнен', '', 'success');
-            setTimeout(() => window.location.href = '/', 1500);
         }
 
         // Инициализация
@@ -856,17 +793,19 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             changeTheme(savedTheme);
             
-            console.log(`[INIT] user: {{ user_name }} ({{ user_login }}), theme: ${savedTheme}`);
-            
-            // Закрываем выпадающие меню при клике вне их
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.meeting-actions-dropdown')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
+                if (!e.target.closest('.meeting-actions-dropdown') && !e.target.closest('.settings-btn')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+                    if (!e.target.closest('.settings-dropdown')) {
+                        document.getElementById('settingsDropdown').classList.remove('show');
+                    }
                 }
+            });
+            
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) closeModal(this.id);
+                });
             });
         });
     </script>
-</body>
-</html>

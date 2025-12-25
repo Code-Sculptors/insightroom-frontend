@@ -290,7 +290,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     min-width: 120px;
-    z-index: 2000;
+    z-index: 1001;
     margin-top: 5px;
     overflow: hidden;
 }
@@ -561,7 +561,7 @@
     transition: all 0.3s ease;
     margin-right: 12px;
     position: relative;
-    z-index: 1101;
+    z-index: 1000;
 }
 
 .settings-btn:hover {
@@ -575,7 +575,7 @@
     filter: brightness(0) invert(1);
 }
 
-/* ИСПРАВЛЕННЫЙ КОД */
+/* ИСПРАВЛЕННЫЙ КОД ДЛЯ ВЫПАДАЮЩИХ МЕНЮ */
 .settings-dropdown {
     display: none;
     position: absolute;
@@ -585,10 +585,10 @@
     backdrop-filter: blur(20px);
     border-radius: 12px;
     padding: 16px;
-    width: 250px; /* Уменьшили ширину */
+    width: 250px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 10001 !important;
+    z-index: 1001;
 }
 
 /* Дополнительное исправление для контейнера настроек */
@@ -597,16 +597,8 @@
     backdrop-filter: blur(10px);
     padding: 20px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative; /* Убедитесь, что это есть */
-    z-index: 9999 !important; /* Увеличьте z-index для хедера */
-}
-
-/* И для контейнера пользователя */
-.user-menu {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    position: relative; /* Добавьте это */
+    position: relative;
+    z-index: 1000;
 }
 
 .settings-dropdown.show {
@@ -711,25 +703,11 @@
     border-color: #3498db;
 }
 
-<<<<<<< Updated upstream
-/* Темная тема */
-body.dark-theme .animated-bg {
-<<<<<<< HEAD
-    background: linear-gradient(-45deg, #2c3e50, #34495e, #4a6572, #556f7a);
-=======
 /* Цвета для разных статусов */
 .status-badge.active {
     color: #27ae60;
     background: rgba(39, 174, 96, 0.1);
     border-color: rgba(39, 174, 96, 0.3);
->>>>>>> Stashed changes
-=======
-    /*background: linear-gradient(-45deg, #2c3e50, #34495e, #4a6572, #556f7a);*/
-    /*background: linear-gradient(-45deg, #0a0a1a, #0f1420, #1a1f2b, #0c0e17);*/
-    background: linear-gradient(-45deg, #0d1b2a, #1b263b, #415a77, #000000);
-    /*background: linear-gradient(-45deg, #000000, #0a1929, #162447, #000000);*/
-    
->>>>>>> 00d0c03e0d3c0554f8a9e090b968bba43a129619
 }
 
 .status-badge.planned {
@@ -750,7 +728,7 @@ body.dark-theme .animated-bg {
     border-color: rgba(231, 76, 60, 0.3);
 }
 
-/* Модальные окна */
+/* МОДАЛЬНЫЕ ОКНА - ИСПРАВЛЕННЫЙ КОД */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -758,30 +736,43 @@ body.dark-theme .animated-bg {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999 !important;
     justify-content: center;
     align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+body.modal-open {
+    overflow: hidden;
 }
 
 .modal-overlay.show {
-    display: flex;
-    animation: fadeIn 0.3s ease;
+    display: flex !important;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
     background: white;
     padding: 24px;
     border-radius: 14px;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
     max-width: 500px;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
-    animation: slideIn 0.3s ease;
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+    z-index: 10000 !important;
 }
 
-@keyframes slideIn {
+@keyframes modalSlideIn {
     from { 
         opacity: 0;
         transform: translateY(-30px) scale(0.95);
@@ -933,6 +924,16 @@ body.dark-theme .animated-bg {
     background: #f8f9fa;
     border-radius: 8px;
     margin: 8px 0;
+}
+
+/* ИСПРАВЛЕНИЕ ДЛЯ АНИМИРОВАННОГО ФОНА */
+.animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1 !important;
 }
 
 /* ТЕМНАЯ ТЕМА */
@@ -1101,7 +1102,7 @@ body.dark-theme .privacy-select:focus {
 
 /* Модальные окна в темной теме */
 body.dark-theme .modal-overlay {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
 }
 
 body.dark-theme .modal-content {
@@ -1202,6 +1203,11 @@ body.dark-theme .empty-state {
     background: rgba(40, 40, 40, 0.8);
 }
 
+/* Toast уведомления в темной теме */
+body.dark-theme .toast-container {
+    z-index: 10002 !important;
+}
+
 /* Адаптивность */
 @media (max-width: 1400px) {
     .dashboard-layout {
@@ -1226,6 +1232,12 @@ body.dark-theme .empty-state {
     .dashboard-sidebar {
         position: static;
         z-index: auto;
+    }
+    
+    .settings-dropdown {
+        right: 10px;
+        left: auto;
+        width: 280px;
     }
 }
 
@@ -1291,18 +1303,22 @@ body.dark-theme .empty-state {
     
     .settings-dropdown {
         right: 10px;
-        left: 10px;
-        width: auto;
         top: 70px;
-        padding: 18px;
         width: 280px;
-        margin: 0 auto;
+        margin: 0;
+    }
+    
+    .modal-overlay {
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: 60px;
     }
     
     .modal-content {
         padding: 22px;
-        margin: 15px;
-        max-width: 450px;
+        margin: 0;
+        max-width: 100%;
+        max-height: 80vh;
     }
     
     .modal-form {
@@ -1373,11 +1389,15 @@ body.dark-theme .empty-state {
     
     .modal-content {
         padding: 20px;
-        margin: 10px;
     }
     
     .settings-dropdown {
         width: 260px;
         padding: 16px;
+    }
+    
+    .modal-overlay {
+        padding: 5px;
+        padding-top: 50px;
     }
 }
