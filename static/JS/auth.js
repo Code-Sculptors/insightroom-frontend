@@ -35,12 +35,12 @@ class AuthService {
             credentials: 'include'
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
             this.is_login = true;
             return true;
         } else {
+            console.log('error in register() auth.js')
+            const data = await response.json();
             return data.error;
         }
     }
